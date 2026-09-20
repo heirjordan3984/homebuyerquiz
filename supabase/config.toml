@@ -1,0 +1,29 @@
+[functions.backfill-slack]
+verify_jwt = false
+
+[functions.batchdata-lookup]
+verify_jwt = false
+
+[functions.export-leads]
+verify_jwt = false
+
+[functions.rentcast-lookup]
+verify_jwt = false
+
+[functions.slack-notify]
+verify_jwt = false
+
+[functions.static-map]
+verify_jwt = false
+
+[functions.upload-images]
+verify_jwt = false
+
+[functions.vapi-intro-agreement]
+verify_jwt = false
+
+[functions.vapi-schedule-call]
+verify_jwt = false
+
+[functions.vapi-transfer-dispatch]
+verify_jwt = false

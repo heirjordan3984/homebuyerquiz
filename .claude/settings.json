@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /tmp/cc-agent/65501406/project && npm run build 2>&1 | tail -5",
+            "timeout": 60,
+            "shell": "bash",
+            "statusMessage": "Running npm run build..."
+          }
+        ]
+      }
+    ]
+  }
+}
