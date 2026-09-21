@@ -27,3 +27,6 @@ verify_jwt = false
 
 [functions.vapi-transfer-dispatch]
 verify_jwt = false
+
+[functions.quiz-analytics]
+verify_jwt = false

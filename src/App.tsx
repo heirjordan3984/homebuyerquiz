@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { BarChart3 } from 'lucide-react';
 import type { PlaceDetails } from './components/AddressAutocomplete';
 import IntroScreen from './components/IntroScreen';
 import QuizQuestion from './components/QuizQuestion';
@@ -21,6 +22,7 @@ import { infoSlides } from './data/infoSlides';
 import { computeResults, type Answers } from './utils/quizLogic';
 import { supabase } from './lib/supabase';
 import AdminShell from './components/AdminShell';
+import AdminDashboard from './components/AdminDashboard';
 
 type Phase = 'intro' | 'quiz' | 'gate' | 'evaluating' | 'results';
 type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full' | 'booking';
@@ -85,6 +87,44 @@ function countQuestionsAnsweredBefore(screenIndex: number): number {
 }
 
 const SESSION_KEY = 'homeiq_session';
+const QUIZ_TOKEN_KEY = 'homeiq_quiz_token';
+
+function getOrCreateQuizToken(): string {
+  try {
+    let token = sessionStorage.getItem(QUIZ_TOKEN_KEY);
+    if (!token) {
+      token = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      sessionStorage.setItem(QUIZ_TOKEN_KEY, token);
+    }
+    return token;
+  } catch {
+    return `fallback-${Date.now()}`;
+  }
+}
+
+function trackQuizProgress(step: number, stepType: string, stepLabel: string, questionsAnswered: number, completed?: boolean, leadEmail?: string) {
+  try {
+    const token = getOrCreateQuizToken();
+    supabase
+      .from('quiz_sessions')
+      .upsert({
+        session_token: token,
+        current_step: step,
+        step_type: stepType,
+        step_label: stepLabel,
+        questions_answered: questionsAnswered,
+        total_questions: TOTAL_QUESTIONS,
+        completed: completed ?? false,
+        lead_email: leadEmail ?? null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'session_token' })
+      .then(({ error }) => {
+        if (error) console.error('[quiz_sessions] upsert error:', error);
+      });
+  } catch (e) {
+    // non-critical, don't break the quiz
+  }
+}
 
 function loadSession() {
   try {
@@ -141,6 +181,15 @@ function App() {
   useEffect(() => {
     saveSession({ phase, currentScreenIndex, answers, textAnswers, placeDetails, leadName, leadEmail, leadPhone, resultsView });
   }, [phase, currentScreenIndex, answers, textAnswers, placeDetails, leadName, leadEmail, leadPhone, resultsView]);
+
+  useEffect(() => {
+    if (hash === '#admin' || hash === '#dashboard') return;
+    const screen = screenSequence[currentScreenIndex];
+    if (!screen) return;
+    const qAnswered = countQuestionsAnsweredBefore(currentScreenIndex);
+    const label = screenLabels[currentScreenIndex] ?? `Step ${currentScreenIndex}`;
+    trackQuizProgress(currentScreenIndex, screen.type, label, qAnswered);
+  }, [phase, currentScreenIndex, hash]);
 
   const fetchedAddressRef = useRef<string | null>(null);
 
@@ -285,6 +334,8 @@ function App() {
         if (error) console.error('[lead_submissions] insert error:', error);
       });
 
+    trackQuizProgress(currentScreenIndex, 'gate', 'Completed', TOTAL_QUESTIONS, true, _email);
+
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vapi-schedule-call`, {
       method: 'POST',
       headers: {
@@ -361,6 +412,7 @@ function App() {
 
   function handleRetake() {
     clearSession();
+    try { sessionStorage.removeItem(QUIZ_TOKEN_KEY); } catch {}
     setPhase('intro');
     setCurrentScreenIndex(0);
     setAnswers({});
@@ -401,12 +453,32 @@ function App() {
   void screenLabels;
   void handleDevJump;
 
+  const dashboardButton = (
+    <a
+      href="#admin"
+      className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95"
+      style={{
+        backgroundColor: 'rgba(13,27,42,0.85)',
+        color: '#C9A84C',
+        backdropFilter: 'blur(8px)',
+        boxShadow: '0 2px 12px rgba(13,27,42,0.2)',
+      }}
+    >
+      <BarChart3 size={14} />
+      Dashboard
+    </a>
+  );
+
   if (hash === '#admin') {
     return <AdminShell />;
   }
 
+  if (hash === '#dashboard') {
+    return <AdminDashboard />;
+  }
+
   if (phase === 'intro') {
-    return <><IntroScreen onFirstAnswer={handleFirstAnswer} />{navigator}</>;
+    return <><IntroScreen onFirstAnswer={handleFirstAnswer} />{navigator}{dashboardButton}</>;
   }
 
   if (phase === 'gate') {
@@ -417,12 +489,13 @@ function App() {
       <>
         <GateScreen onSubmit={handleGateSubmit} progressPercent={100} address={gateAddress} city={gateCity} lat={placeDetails?.lat ?? null} lng={placeDetails?.lng ?? null} />
         {navigator}
+        {dashboardButton}
       </>
     );
   }
 
   if (phase === 'evaluating') {
-    return <><EvaluatingScreen onComplete={handleEvaluatingComplete} />{navigator}</>;
+    return <><EvaluatingScreen onComplete={handleEvaluatingComplete} />{navigator}{dashboardButton}</>;
   }
 
   if (phase === 'results') {
@@ -432,7 +505,7 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'instant' });
       setResultsView(v);
     }
-    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} batchData={batchData} batchLoading={batchLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}</>;
+    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} batchData={batchData} batchLoading={batchLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
   }
 
   const currentScreen = screenSequence[currentScreenIndex];
@@ -452,6 +525,7 @@ function App() {
           progressPercent={progressPercent}
         />
         {navigator}
+        {dashboardButton}
       </>
     );
   }
@@ -475,6 +549,7 @@ function App() {
           canGoBack={true}
         />
         {navigator}
+        {dashboardButton}
       </>
     );
   }

@@ -1,19 +1,26 @@
 import { useState } from 'react';
-import { Users, PhoneCall, Network } from 'lucide-react';
+import { Users, PhoneCall, Network, BarChart3 } from 'lucide-react';
 import AdminLeads from './AdminLeads';
 import AdminAICaller from './AdminAICaller';
 import AdminPartners from './AdminPartners';
+import AdminDashboard from './AdminDashboard';
 
-type Tab = 'leads' | 'ai-caller' | 'partners';
+type Tab = 'dashboard' | 'leads' | 'ai-caller' | 'partners';
 
 export default function AdminShell() {
-  const [tab, setTab] = useState<Tab>('leads');
+  const [tab, setTab] = useState<Tab>('dashboard');
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF8' }}>
       <div className="w-full h-1" style={{ backgroundColor: '#C9A84C' }} />
       <div className="max-w-6xl mx-auto px-6 pt-8">
         <nav className="flex items-center gap-2 mb-2">
+          <TabButton
+            active={tab === 'dashboard'}
+            onClick={() => setTab('dashboard')}
+            icon={<BarChart3 size={14} />}
+            label="Dashboard"
+          />
           <TabButton
             active={tab === 'leads'}
             onClick={() => setTab('leads')}
@@ -35,6 +42,7 @@ export default function AdminShell() {
         </nav>
       </div>
       <div className="max-w-6xl mx-auto px-6 py-6">
+        {tab === 'dashboard' && <AdminDashboard />}
         {tab === 'leads' && <AdminLeads embedded />}
         {tab === 'ai-caller' && <AdminAICaller />}
         {tab === 'partners' && <AdminPartners />}
