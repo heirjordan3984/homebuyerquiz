@@ -25,7 +25,7 @@ import AdminShell from './components/AdminShell';
 import AdminDashboard from './components/AdminDashboard';
 
 type Phase = 'intro' | 'quiz' | 'gate' | 'evaluating' | 'results';
-type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full' | 'booking';
+type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full';
 type ScreenType = 'question' | 'infoSlide' | 'evaluating' | 'gate' | 'results';
 
 interface Screen {
@@ -335,24 +335,6 @@ function App() {
       });
 
     trackQuizProgress(currentScreenIndex, 'gate', 'Completed', TOTAL_QUESTIONS, true, _email);
-
-    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vapi-schedule-call`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name,
-        email: _email,
-        phone: _phone,
-        address: addressToLookup ?? '',
-        lat: placeDetails?.lat ?? null,
-        lng: placeDetails?.lng ?? null,
-        state: answers[2] !== undefined ? questions.find((q) => q.id === 2)?.options[answers[2]] ?? null : null,
-        quizAnswers,
-      }),
-    }).catch((err) => console.error('[vapi-schedule-call] error:', err));
 
     const propertyValue =
       batchData?.property?.valuation?.estimatedValue ??

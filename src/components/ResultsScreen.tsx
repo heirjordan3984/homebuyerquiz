@@ -1,12 +1,11 @@
 import { Slide1MarketOpportunity, Slide2ProfitPotential } from './ResultsSlides';
 import ResultsFullAnalysis from './ResultsFullAnalysis';
-import BookingScreen from './BookingScreen';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
 import type { BatchDataResponse } from '../types/batchdata';
 
-export type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full' | 'booking';
+export type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full';
 
 interface ResultsScreenProps {
   result: QuizResult;
@@ -53,21 +52,7 @@ export default function ResultsScreen({
     downPaymentAnswer,
     isLoading: rentcastLoading || batchLoading,
     onNext: () => {},
-    onBook: () => onViewChange('booking'),
   };
-
-  if (view === 'booking') {
-    const propertyAddress = placeDetails?.address ?? addressText ?? null;
-    return (
-      <BookingScreen
-        onBack={() => onViewChange('slide2')}
-        leadName={leadName}
-        leadEmail={leadEmail}
-        leadPhone={leadPhone}
-        propertyAddress={propertyAddress}
-      />
-    );
-  }
 
   if (view === 'full') {
     return (

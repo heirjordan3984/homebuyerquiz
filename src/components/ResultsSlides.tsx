@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   TrendingUp, DollarSign, Users, BarChart3, MapPin, Clock,
-  ArrowRight, Calendar, Zap, Star, CheckCircle, PhoneCall, ChevronRight,
-
+  ArrowRight, Zap, Star, CheckCircle, PhoneCall, ChevronRight,
 } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
@@ -34,7 +33,6 @@ interface SlideProps {
   leadPhone?: string;
   downPaymentAnswer?: number | null;
   onNext: () => void;
-  onBook?: () => void;
   isLoading?: boolean;
 }
 
@@ -731,8 +729,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
   );
 }
 
-function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchData, leadName, downPaymentAnswer, onNext, onBook, isLoading }: SlideProps) {
-  void onNext;
+function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchData, leadName, downPaymentAnswer, isLoading }: SlideProps) {
   void leadName;
   const address = placeDetails?.address ?? addressText ?? null;
   const avm = rentcastData?.avm ?? null;
@@ -1033,23 +1030,12 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
           </>
         )}
 
-        <button
-          type="button"
-          onClick={() => onBook?.()}
-          className="w-full font-dm font-medium py-4 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
-          style={{ backgroundColor: '#C9A84C', color: '#0D1B2A' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D4B86A'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A84C'; }}
-        >
-          Book My Free Advisor Call
-          <ArrowRight size={15} />
-        </button>
       </div>
     </div>
   );
 }
 
-function Slide3BookCall({ result, rentcastData, batchData, leadName, downPaymentAnswer, onNext, onBook }: SlideProps) {
+function Slide3BookCall({ result, rentcastData, batchData, leadName, downPaymentAnswer }: SlideProps) {
   const avm = rentcastData?.avm ?? null;
   const estimatedPrice = avm?.price ?? batchData?.property?.valuation?.estimatedValue ?? null;
   const agentGapHigh = estimatedPrice ? formatCurrencyShort(Math.round(estimatedPrice * 0.08)) : null;
@@ -1182,37 +1168,6 @@ function Slide3BookCall({ result, rentcastData, batchData, leadName, downPayment
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onBook?.()}
-          className="w-full font-dm font-medium py-4 rounded-full text-sm text-center transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 mb-3"
-          style={{ backgroundColor: '#C9A84C', color: '#0D1B2A' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D4B86A'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A84C'; }}
-        >
-          <Calendar size={15} />
-          Book My Free Advisor Call
-        </button>
-
-        <p className="font-dm text-xs text-center mb-8" style={{ color: '#C0B078' }}>
-          Spots are limited — advisors serve a specific number of homebuyers per week
-        </p>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex-1 h-px" style={{ backgroundColor: 'rgba(201,168,76,0.2)' }} />
-          <p className="font-dm text-xs" style={{ color: '#D1D5DB' }}>or</p>
-          <div className="flex-1 h-px" style={{ backgroundColor: 'rgba(201,168,76,0.2)' }} />
-        </div>
-
-        <button
-          onClick={onNext}
-          className="w-full font-dm text-sm py-3 rounded-full transition-colors duration-200"
-          style={{ color: '#9CA3AF', border: '1px solid #E5E7EB', backgroundColor: 'transparent' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#C9A84C'; (e.currentTarget as HTMLButtonElement).style.color = '#C9A84C'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#E5E7EB'; (e.currentTarget as HTMLButtonElement).style.color = '#9CA3AF'; }}
-        >
-          Review My Full Analysis First
-        </button>
       </div>
     </div>
   );
