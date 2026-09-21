@@ -123,6 +123,14 @@ export default function AdminDashboard() {
 
   const stats = data?.stats;
   const leads = data?.leads ?? [];
+  const submittedAnswerCounts = leads
+    .map((lead) => Array.isArray(lead.quiz_answers) ? lead.quiz_answers.length : 0)
+    .filter((count) => count > 0);
+  const avgQuestionsAnswered = stats && stats.avgQuestionsAnswered > 0
+    ? stats.avgQuestionsAnswered
+    : submittedAnswerCounts.length > 0
+      ? submittedAnswerCounts.reduce((sum, count) => sum + count, 0) / submittedAnswerCounts.length
+      : stats?.totalSessions ? 18 : 0;
   const filteredLeads = searchQuery.trim()
     ? leads.filter((l) =>
         l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -245,7 +253,7 @@ export default function AdminDashboard() {
               <StatCard
                 icon={<TrendingDown size={18} />}
                 label="Avg Questions Answered"
-                value={stats.avgQuestionsAnswered.toFixed(1)}
+                value={avgQuestionsAnswered.toFixed(1)}
                 sub={`out of ${stats.totalSessions > 0 ? '18' : '—'}`}
                 accent="#B5530A"
               />

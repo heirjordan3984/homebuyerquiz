@@ -127,10 +127,15 @@ Deno.serve(async (req: Request) => {
     }
     const dropOffs = Array.from(dropOffMap.values()).sort((a, b) => b.count - a.count);
 
+    const submittedAnswerCounts = leads
+      .map((lead) => Array.isArray(lead.quiz_answers) ? lead.quiz_answers.length : 0)
+      .filter((count) => count > 0);
     const avgQuestionsAnswered =
       sessions.length > 0
         ? sessions.reduce((sum, s) => sum + s.questions_answered, 0) / sessions.length
-        : totalSessions > 0 ? TOTAL_QUESTIONS : 0;
+        : submittedAnswerCounts.length > 0
+          ? submittedAnswerCounts.reduce((sum, count) => sum + count, 0) / submittedAnswerCounts.length
+          : totalSessions > 0 ? TOTAL_QUESTIONS : 0;
 
     const answerDistribution = new Map<
       number,
