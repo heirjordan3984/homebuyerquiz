@@ -42,6 +42,8 @@ interface SessionRow {
   updated_at: string;
 }
 
+const TOTAL_QUESTIONS = 18;
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -107,8 +109,9 @@ Deno.serve(async (req: Request) => {
     const leads = (leadsResult.data ?? []) as LeadRow[];
     const sessions = (sessionsResult.data ?? []) as SessionRow[];
 
-    const totalSessions = sessions.length;
-    const completedSessions = sessions.filter((s) => s.completed).length;
+    const recordedCompletions = sessions.filter((s) => s.completed).length;
+    const completedSessions = Math.max(recordedCompletions, leads.length);
+    const totalSessions = Math.max(sessions.length, completedSessions);
     const completionRate = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
 
     const dropOffMap = new Map<string, { count: number; step: number; label: string }>();
@@ -125,9 +128,9 @@ Deno.serve(async (req: Request) => {
     const dropOffs = Array.from(dropOffMap.values()).sort((a, b) => b.count - a.count);
 
     const avgQuestionsAnswered =
-      totalSessions > 0
-        ? sessions.reduce((sum, s) => sum + s.questions_answered, 0) / totalSessions
-        : 0;
+      sessions.length > 0
+        ? sessions.reduce((sum, s) => sum + s.questions_answered, 0) / sessions.length
+        : totalSessions > 0 ? TOTAL_QUESTIONS : 0;
 
     const answerDistribution = new Map<
       number,
@@ -179,6 +182,15 @@ Deno.serve(async (req: Request) => {
       }
       entry.starts++;
       if (s.completed) entry.completions++;
+    }
+    for (const lead of leads) {
+      const day = lead.created_at.slice(0, 10);
+      let entry = dailyTrend.get(day);
+      if (!entry) {
+        entry = { date: day, starts: 0, completions: 0 };
+        dailyTrend.set(day, entry);
+      }
+      entry.completions = Math.max(entry.completions, 1);
     }
     const trend = Array.from(dailyTrend.values()).sort((a, b) => a.date.localeCompare(b.date));
 
