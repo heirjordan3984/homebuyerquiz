@@ -61,14 +61,14 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
           fontWeight: 700,
         }}
       >
-        Is now the right time to buy{' '}
+        Discover your exact home buying power:{' '}
         <span
           style={{
             color: '#C9A84C',
             fontStyle: 'italic',
           }}
         >
-          in your market?
+          house price, down payment, & monthly mortgage.
         </span>
       </h1>
 
@@ -83,7 +83,7 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
           fontWeight: 400,
         }}
       >
-        New 60-second FREE tool reveals whether you should buy now or wait, based on your personal situation and real-time data for your area.
+        New 60-second FREE tool reveals exactly what you can offer before you walk in the door.
       </h2>
 
       {/* Stat badges */}
