@@ -67,6 +67,7 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
           style={{
             color: '#C9A84C',
             fontStyle: 'italic',
+            fontSize: '0.75em',
           }}
         >
           House price, down payment, & monthly mortgage.
