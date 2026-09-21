@@ -61,14 +61,15 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
           fontWeight: 700,
         }}
       >
-        Discover your exact home buying power:{' '}
+        Discover your exact home buying power:
+        <br />
         <span
           style={{
             color: '#C9A84C',
             fontStyle: 'italic',
           }}
         >
-          house price, down payment, & monthly mortgage.
+          House price, down payment, & monthly mortgage.
         </span>
       </h1>
 
