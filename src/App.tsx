@@ -453,7 +453,8 @@ function App() {
   void screenLabels;
   void handleDevJump;
 
-  const dashboardButton = (
+  const isDev = import.meta.env.DEV;
+  const dashboardButton = isDev ? (
     <a
       href="#admin"
       className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95"
@@ -467,7 +468,7 @@ function App() {
       <BarChart3 size={14} />
       Dashboard
     </a>
-  );
+  ) : null;
 
   if (hash === '#admin') {
     return <AdminShell />;

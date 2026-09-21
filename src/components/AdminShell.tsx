@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, PhoneCall, Network, BarChart3 } from 'lucide-react';
+import { Users, PhoneCall, Network, BarChart3, ArrowLeft } from 'lucide-react';
 import AdminLeads from './AdminLeads';
 import AdminAICaller from './AdminAICaller';
 import AdminPartners from './AdminPartners';
@@ -14,6 +14,14 @@ export default function AdminShell() {
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF8' }}>
       <div className="w-full h-1" style={{ backgroundColor: '#C9A84C' }} />
       <div className="max-w-6xl mx-auto px-6 pt-8">
+        <a
+          href="#"
+          className="inline-flex items-center gap-2 mb-4 text-sm font-semibold transition-colors"
+          style={{ color: '#0D1B2A' }}
+        >
+          <ArrowLeft size={16} />
+          Back to Quiz
+        </a>
         <nav className="flex items-center gap-2 mb-2">
           <TabButton
             active={tab === 'dashboard'}
