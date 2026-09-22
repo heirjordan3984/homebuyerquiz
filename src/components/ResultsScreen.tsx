@@ -17,6 +17,7 @@ interface ResultsScreenProps {
   leadEmail?: string;
   leadPhone?: string;
   downPaymentAnswer?: number | null;
+  budgetAnswer?: number | null;
   view: ResultsView;
   onViewChange: (v: ResultsView) => void;
 }
@@ -32,6 +33,7 @@ export default function ResultsScreen({
   leadEmail,
   leadPhone,
   downPaymentAnswer,
+  budgetAnswer,
   view,
   onViewChange,
 }: ResultsScreenProps) {
@@ -56,6 +58,7 @@ export default function ResultsScreen({
         addressText={addressText}
         rentcastData={rentcastData}
         rentcastLoading={rentcastLoading}
+        budgetAnswer={budgetAnswer}
         onNext={() => onViewChange('slide1')}
       />
     );

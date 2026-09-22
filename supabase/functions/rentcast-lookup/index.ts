@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { address, lat, lng } = await req.json();
+    const { address, lat, lng, priceMin, priceMax } = await req.json();
 
     if (!address) {
       return new Response(JSON.stringify({ error: "address required" }), {
@@ -128,15 +128,47 @@ Deno.serve(async (req: Request) => {
     }
 
     // --- Nearby active listings (city-level, not property-specific) ---
+    // Fetch more listings than we need so we can filter by the buyer's budget
+    const listingLimit = 25;
     let listingsData: unknown = null;
     if (hasCoords) {
       listingsData = await fetchJson(
-        `${RENTCAST_BASE}/listings/sale?latitude=${lat}&longitude=${lng}&radius=5&limit=5&status=Active`
+        `${RENTCAST_BASE}/listings/sale?latitude=${lat}&longitude=${lng}&radius=5&limit=${listingLimit}&status=Active`
       );
     } else {
       listingsData = await fetchJson(
-        `${RENTCAST_BASE}/listings/sale?address=${encodedAddress}&radius=5&limit=5&status=Active`
+        `${RENTCAST_BASE}/listings/sale?address=${encodedAddress}&radius=5&limit=${listingLimit}&status=Active`
       );
+    }
+
+    // Filter listings by the buyer's budget range; if too few match, return closest-to-range
+    let filteredListings: unknown[] = [];
+    if (Array.isArray(listingsData)) {
+      const all = listingsData as Array<Record<string, unknown>>;
+      const inRange = all.filter((l) => {
+        const p = typeof l.price === 'number' ? l.price : null;
+        if (p == null) return false;
+        if (priceMin != null && p < priceMin) return false;
+        if (priceMax != null && p > priceMax) return false;
+        return true;
+      });
+
+      if (inRange.length >= 3) {
+        filteredListings = inRange.slice(0, 5);
+      } else {
+        // Not enough in-range — sort by closeness to the range midpoint
+        const mid = priceMin != null && priceMax != null
+          ? (priceMin + priceMax) / 2
+          : priceMin ?? priceMax ?? null;
+        if (mid != null) {
+          filteredListings = all
+            .filter((l) => typeof l.price === 'number')
+            .sort((a, b) => Math.abs((a.price as number) - mid) - Math.abs((b.price as number) - mid))
+            .slice(0, 5);
+        } else {
+          filteredListings = all.slice(0, 5);
+        }
+      }
     }
 
     const market = buildMarketSummary(marketRaw);
@@ -145,7 +177,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         avm: null,
         comparables: null,
-        nearbyListings: Array.isArray(listingsData) ? listingsData : null,
+        nearbyListings: filteredListings.length > 0 ? filteredListings : null,
         market,
         _debug: {
           zip: cacheKey,

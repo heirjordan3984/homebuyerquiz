@@ -73,6 +73,7 @@ interface Props {
   addressText?: string | null;
   rentcastData?: RentcastData | null;
   rentcastLoading?: boolean;
+  budgetAnswer?: number | null;
   onNext?: () => void;
 }
 
@@ -93,7 +94,17 @@ function calcAgentGap(price: number, lowPct = 0.03, highPct = 0.07): [string, st
   return [formatCurrencyShort(price * lowPct), formatCurrencyShort(price * highPct)];
 }
 
-export default function ResultsFullAnalysis({ result, placeDetails, addressText, rentcastData, rentcastLoading, onNext }: Props) {
+const BUDGET_RANGES: [number, number | null][] = [
+  [0, 250_000],
+  [250_000, 450_000],
+  [450_000, 700_000],
+  [700_000, 1_000_000],
+  [1_000_000, null],
+];
+
+const BUDGET_LABELS = ['Under $250K', '$250K–$450K', '$450K–$700K', '$700K–$1M', '$1M+'];
+
+export default function ResultsFullAnalysis({ result, placeDetails, addressText, rentcastData, rentcastLoading, budgetAnswer, onNext }: Props) {
   void result;
   const nearbyListings = rentcastData?.nearbyListings ?? null;
   const market = rentcastData?.market ?? null;
@@ -108,7 +119,29 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
   const hasMarketData = medianPrice !== null;
   const [gapLow, gapHigh] = hasMarketData ? calcAgentGap(medianPrice!) : ['$15K', '$35K'];
 
-  const topListings = nearbyListings?.slice(0, 3) ?? [];
+  // Filter listings by budget; if too few in range, get closest to range
+  const budgetRange = budgetAnswer != null ? BUDGET_RANGES[budgetAnswer] : null;
+  const budgetLabel = budgetAnswer != null ? BUDGET_LABELS[budgetAnswer] : null;
+
+  const topListings = (() => {
+    if (!nearbyListings || nearbyListings.length === 0) return [];
+    if (!budgetRange) return nearbyListings.slice(0, 3);
+    const [min, max] = budgetRange;
+    const inRange = nearbyListings.filter((l) => {
+      const p = typeof l.price === 'number' ? l.price : null;
+      if (p == null) return false;
+      if (min != null && p < min) return false;
+      if (max != null && p > max) return false;
+      return true;
+    });
+    if (inRange.length >= 3) return inRange.slice(0, 3);
+    // Not enough in range — sort by closeness to range midpoint
+    const mid = min != null && max != null ? (min + max) / 2 : min ?? max ?? 0;
+    return [...nearbyListings]
+      .filter((l) => typeof l.price === 'number')
+      .sort((a, b) => Math.abs((a.price ?? 0) - mid) - Math.abs((b.price ?? 0) - mid))
+      .slice(0, 3);
+  })();
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
@@ -137,6 +170,42 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
           >
             {city ? `The ${city} Market Is Moving. Here's What We Know About This Market` : `Here's What We Know About This Market`}
           </h1>
+        </div>
+
+        {/* Average home value banner */}
+        <div
+          className="mb-8 rounded-2xl overflow-hidden"
+          style={{ border: '1.5px solid #E8E0C8' }}
+        >
+          <div className="px-6 py-5 flex items-center gap-4" style={{ backgroundColor: '#0D1B2A' }}>
+            <div
+              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+              style={{ backgroundColor: 'rgba(201,168,76,0.2)' }}
+            >
+              <Home size={18} style={{ color: '#C9A84C' }} />
+            </div>
+            <div className="flex-1">
+              <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '9px' }}>
+                {city ? `${city} Average Home Value` : 'Area Average Home Value'}
+              </p>
+              <p
+                className="font-playfair font-bold leading-none mt-1"
+                style={{ fontSize: 'clamp(1.75rem, 6vw, 2.5rem)', color: '#C9A84C', letterSpacing: '-0.02em' }}
+              >
+                {hasMarketData ? formatCurrency(medianPrice!) : 'Data loading…'}
+              </p>
+            </div>
+            {budgetLabel && (
+              <div className="text-right shrink-0">
+                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
+                  Your Budget
+                </p>
+                <p className="font-dm font-semibold text-sm" style={{ color: '#FFFFFF' }}>
+                  {budgetLabel}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
 
@@ -288,7 +357,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
             <div className="flex items-center gap-2 mb-4">
               <Clock size={13} style={{ color: '#C9A84C' }} />
               <p className="font-dm font-medium tracking-widest uppercase text-xs" style={{ color: '#C9A84C' }}>
-                Active Listings Near You
+                Active Listings{budgetLabel ? ` in Your Range (${budgetLabel})` : ' Near You'}
               </p>
             </div>
 

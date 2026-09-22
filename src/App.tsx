@@ -214,6 +214,8 @@ function App() {
         address: addressToLookup,
         lat: placeDetails?.lat ?? null,
         lng: placeDetails?.lng ?? null,
+        priceMin: (() => { const b = answers[6]; if (b == null) return null; const ranges = [[0,250000],[250000,450000],[450000,700000],[700000,1000000],[1000000,null]]; return ranges[b]?.[0] ?? null; })(),
+        priceMax: (() => { const b = answers[6]; if (b == null) return null; const ranges = [[0,250000],[250000,450000],[450000,700000],[700000,1000000],[1000000,null]]; return ranges[b]?.[1] ?? null; })(),
       }),
     })
       .then(async (res) => {
@@ -466,7 +468,8 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'instant' });
       setResultsView(v);
     }
-    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
+    const budgetAnswer = answers[6] ?? null;
+    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} budgetAnswer={budgetAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
   }
 
   const currentScreen = screenSequence[currentScreenIndex];
