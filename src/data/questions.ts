@@ -38,9 +38,9 @@ export const questions: Question[] = [
   },
   {
     id: 3,
-    topic: "Property Address",
+    topic: "Target Area",
     type: 'text',
-    question: "Is there a specific area or city in {state} that you are interested in?",
+    question: "What city or area in {state} are you looking to buy in?",
     placeholder: "Enter a city or area...",
     options: [],
   },

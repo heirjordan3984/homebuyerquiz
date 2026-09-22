@@ -474,8 +474,8 @@ function BuyerSearchInterestTable({ city }: { city: string | null }) {
 
 function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNext, isLoading }: SlideProps) {
   const address = placeDetails?.address ?? addressText ?? 'Your Market';
-  const cityState = address.split(',').slice(1).join(',').trim() || address;
-  const city = address.split(',')[1]?.trim() || null;
+  const cityState = address.replace(/, USA$/, '').trim() || address;
+  const city = address.split(',')[0]?.trim() || null;
 
   const market = rentcastData?.market ?? null;
   const avm = rentcastData?.avm ?? null;
@@ -827,7 +827,7 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
                         Estimated Home Value
                       </p>
                       <p className="font-playfair text-white text-sm leading-snug">
-                        {address ? address.split(',')[0] : 'Your Target Property'}
+                        {address ? address.split(',')[0] : 'Your Target Area'}
                       </p>
                     </div>
                   </div>

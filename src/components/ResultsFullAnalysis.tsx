@@ -109,8 +109,8 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
   const city = batchData?.property?.address?.city
     ?? (() => {
       const addr = placeDetails?.address ?? addressText ?? '';
-      const parts = addr.split(',');
-      return parts.length >= 2 ? parts[1].trim().replace(/\s+[A-Z]{2}$/, '').trim() : null;
+      const parts = addr.replace(/, USA$/, '').split(',');
+      return parts.length >= 1 ? parts[0].trim() : null;
     })();
 
   const hasPropertyData = estimatedPrice !== null;
@@ -169,7 +169,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '9px', color: '#8A8A8A' }}>
-                Property
+                Target Area
               </p>
               <p className="font-dm text-sm truncate" style={{ color: '#1A1A1A' }}>
                 {placeDetails?.address ?? addressText}

@@ -465,12 +465,12 @@ function App() {
   }
 
   if (phase === 'gate') {
-    const rawGateAddress = placeDetails?.address ?? textAnswers[3] ?? null;
-    const gateAddress = rawGateAddress ? rawGateAddress.replace(/, USA$/, '') : null;
-    const gateCity = gateAddress ? (gateAddress.split(',')[1]?.trim() || null) : null;
+    const rawGateArea = placeDetails?.address ?? textAnswers[3] ?? null;
+    const gateArea = rawGateArea ? rawGateArea.replace(/, USA$/, '') : null;
+    const gateCity = gateArea ? (gateArea.split(',')[0]?.trim() || null) : null;
     return (
       <>
-        <GateScreen onSubmit={handleGateSubmit} progressPercent={100} address={gateAddress} city={gateCity} lat={placeDetails?.lat ?? null} lng={placeDetails?.lng ?? null} />
+        <GateScreen onSubmit={handleGateSubmit} progressPercent={100} address={gateArea} city={gateCity} lat={placeDetails?.lat ?? null} lng={placeDetails?.lng ?? null} />
         {navigator}
         {dashboardButton}
       </>

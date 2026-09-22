@@ -103,7 +103,7 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
       serviceRef.current.getPlacePredictions(
         {
           input,
-          types: ['address'],
+          types: ['(cities)'],
           componentRestrictions: { country: 'us' },
         },
         (results, status) => {
@@ -209,7 +209,7 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
           value={localText}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder ?? 'Enter your property address...'}
+          placeholder={placeholder ?? 'Enter a city or area...'}
           autoComplete="off"
           className="w-full rounded-xl font-dm outline-none transition-all duration-200"
           style={{

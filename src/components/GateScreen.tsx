@@ -10,18 +10,13 @@ interface GateScreenProps {
   lng?: number | null;
 }
 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
-
-function buildStreetViewUrl(lat: number, lng: number): string {
-  return `https://maps.googleapis.com/maps/api/streetview?size=600x320&location=${lat},${lng}&fov=90&pitch=0&key=${GOOGLE_API_KEY}`;
-}
-
-export default function GateScreen({ onSubmit, progressPercent, address, city, lat, lng }: GateScreenProps) {
+export default function GateScreen({ onSubmit, progressPercent, address, city }: GateScreenProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
-  const [imgError, setImgError] = useState(false);
+
+  void lat; void lng;
 
   function validate() {
     const e: { name?: string; email?: string; phone?: string } = {};
@@ -44,8 +39,7 @@ export default function GateScreen({ onSubmit, progressPercent, address, city, l
     onSubmit(name.trim(), email.trim(), phone.trim());
   }
 
-  const streetViewUrl = lat && lng && GOOGLE_API_KEY ? buildStreetViewUrl(lat, lng) : null;
-  const showPhoto = streetViewUrl && !imgError;
+  const areaLabel = address ?? city ?? null;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAFAF8' }}>
@@ -63,30 +57,11 @@ export default function GateScreen({ onSubmit, progressPercent, address, city, l
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
 
-          {/* Property photo or fallback icon */}
-          {showPhoto ? (
-            <div className="mb-6 rounded-2xl overflow-hidden shadow-lg border" style={{ borderColor: '#E0DAD0' }}>
-              <div className="relative">
-                <img
-                  src={streetViewUrl}
-                  alt="Property exterior"
-                  className="w-full block object-cover"
-                  style={{ height: '220px' }}
-                  onError={() => setImgError(true)}
-                />
-                <div
-                  className="absolute bottom-0 left-0 right-0 px-3 py-2 flex items-center gap-1.5"
-                  style={{ backgroundColor: 'rgba(13,27,42,0.82)', backdropFilter: 'blur(4px)' }}
-                >
-                  <MapPin size={12} style={{ color: '#C9A84C', flexShrink: 0 }} />
-                  <p className="text-white text-xs font-medium truncate">{address}</p>
-                </div>
-              </div>
-            </div>
-          ) : address ? (
+          {/* Area badge */}
+          {areaLabel ? (
             <div className="mb-6 rounded-2xl overflow-hidden shadow-md border px-4 py-3 flex items-center gap-2" style={{ borderColor: '#E0DAD0', backgroundColor: '#F5F2EC' }}>
               <MapPin size={14} style={{ color: '#C9A84C', flexShrink: 0 }} />
-              <p className="text-sm font-medium truncate" style={{ color: '#1A1A1A' }}>{address}</p>
+              <p className="text-sm font-medium truncate" style={{ color: '#1A1A1A' }}>{areaLabel}</p>
             </div>
           ) : (
             <div className="flex justify-center mb-6">
@@ -104,8 +79,8 @@ export default function GateScreen({ onSubmit, progressPercent, address, city, l
             className="text-center text-2xl font-bold mb-2 leading-snug"
             style={{ color: '#1A1A1A', fontFamily: 'Georgia, serif' }}
           >
-            {address ? (
-              <>Your Results For <span style={{ color: '#C9A84C' }}>{address}</span> Are Ready</>
+            {areaLabel ? (
+              <>Your Results For <span style={{ color: '#C9A84C' }}>{areaLabel}</span> Are Ready</>
             ) : (
               'Your Results Are Ready'
             )}
