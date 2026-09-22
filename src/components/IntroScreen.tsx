@@ -61,7 +61,7 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
           fontWeight: 700,
         }}
       >
-        Discover your exact home buying power:
+        How Much Home Can I Afford?
         <br />
         <span
           style={{
@@ -71,7 +71,7 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
             lineHeight: 1.1,
           }}
         >
-          House price, down payment, & monthly mortgage.
+          The answer might surprise you.
         </span>
       </h1>
 
