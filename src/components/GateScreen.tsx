@@ -16,8 +16,6 @@ export default function GateScreen({ onSubmit, progressPercent, address, city }:
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
 
-  void lat; void lng;
-
   function validate() {
     const e: { name?: string; email?: string; phone?: string } = {};
     if (!name.trim()) e.name = 'Please enter your name.';
