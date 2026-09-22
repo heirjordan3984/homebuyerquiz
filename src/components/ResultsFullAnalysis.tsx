@@ -1,10 +1,7 @@
-import { useState, useEffect } from 'react';
-import { TrendingUp, MapPin, ExternalLink, DollarSign, Home, Clock, TrendingDown } from 'lucide-react';
+import { TrendingUp, MapPin, ExternalLink, Home, Clock, TrendingDown } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
-import type { BatchDataResponse } from '../types/batchdata';
-import PropertyIntelCard from './PropertyIntelCard';
 
 const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -37,6 +34,8 @@ function mapStaticUrl(address: string): string {
   const cleaned = stripUnit(address);
   return `https://maps.googleapis.com/maps/api/staticmap?size=600x300&zoom=18&maptype=satellite&markers=color:0xC9A84C%7C${encodeURIComponent(cleaned)}&key=${GMAPS_KEY}`;
 }
+
+import { useState, useEffect } from 'react';
 
 type PhotoStage = 'streetview' | 'staticmap' | 'pexels';
 
@@ -74,11 +73,8 @@ interface Props {
   addressText?: string | null;
   rentcastData?: RentcastData | null;
   rentcastLoading?: boolean;
-  batchData?: BatchDataResponse | null;
-  batchLoading?: boolean;
   onNext?: () => void;
 }
-
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) {
@@ -97,33 +93,21 @@ function calcAgentGap(price: number, lowPct = 0.03, highPct = 0.07): [string, st
   return [formatCurrencyShort(price * lowPct), formatCurrencyShort(price * highPct)];
 }
 
-export default function ResultsFullAnalysis({ result, placeDetails, addressText, rentcastData, rentcastLoading, batchData, batchLoading, onNext }: Props) {
+export default function ResultsFullAnalysis({ result, placeDetails, addressText, rentcastData, rentcastLoading, onNext }: Props) {
   void result;
-  const avm = rentcastData?.avm ?? null;
   const nearbyListings = rentcastData?.nearbyListings ?? null;
-  const comparables = rentcastData?.comparables ?? null;
+  const market = rentcastData?.market ?? null;
 
-  const estimatedPrice = batchData?.property?.valuation?.estimatedValue ?? avm?.price ?? null;
-  void avm;
-
-  const city = batchData?.property?.address?.city
-    ?? (() => {
-      const addr = placeDetails?.address ?? addressText ?? '';
-      const parts = addr.replace(/, USA$/, '').split(',');
-      return parts.length >= 1 ? parts[0].trim() : null;
-    })();
-
-  const hasPropertyData = estimatedPrice !== null;
-  const [gapLow, gapHigh] = hasPropertyData ? calcAgentGap(estimatedPrice!) : ['$15K', '$35K'];
-
-  const topComps = (() => {
-    if (!comparables || estimatedPrice == null) return [];
-    const threshold = estimatedPrice * 1.10;
-    const filtered = comparables
-      .filter((c) => c.price != null && c.price >= threshold)
-      .sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-    return filtered.slice(0, 4);
+  const city = (() => {
+    const addr = placeDetails?.address ?? addressText ?? '';
+    const parts = addr.replace(/, USA$/, '').split(',');
+    return parts.length >= 1 ? parts[0].trim() : null;
   })();
+
+  const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
+  const hasMarketData = medianPrice !== null;
+  const [gapLow, gapHigh] = hasMarketData ? calcAgentGap(medianPrice!) : ['$15K', '$35K'];
+
   const topListings = nearbyListings?.slice(0, 3) ?? [];
 
   return (
@@ -192,7 +176,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
           </div>
         )}
 
-        {rentcastLoading && !hasPropertyData && (placeDetails || addressText) && (
+        {rentcastLoading && !hasMarketData && (placeDetails || addressText) && (
           <div
             className="rounded-2xl overflow-hidden mb-8 animate-pulse"
             style={{ border: '1.5px solid #E8E0C8' }}
@@ -211,7 +195,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
           </div>
         )}
 
-        {hasPropertyData && (
+        {hasMarketData && (
           <div
             className="rounded-2xl overflow-hidden mb-8"
             style={{ border: '1.5px solid #E8E0C8' }}
@@ -224,14 +208,14 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
                 className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                 style={{ backgroundColor: 'rgba(201,168,76,0.2)' }}
               >
-                <DollarSign size={15} style={{ color: '#C9A84C' }} />
+                <TrendingUp size={15} style={{ color: '#C9A84C' }} />
               </div>
               <div>
                 <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '9px' }}>
-                  Automated Valuation Estimate
+                  Market Snapshot
                 </p>
                 <p className="font-playfair text-white text-sm leading-snug">
-                  This Home's Market Value
+                  {city ? `${city} Area Market Data` : 'Area Market Data'}
                 </p>
               </div>
             </div>
@@ -242,11 +226,46 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
                   className="font-playfair font-bold leading-none mb-2"
                   style={{ fontSize: 'clamp(2.25rem, 8vw, 3.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em' }}
                 >
-                  {formatCurrency(estimatedPrice!)}
+                  {formatCurrency(medianPrice!)}
                 </p>
                 <p className="font-dm text-sm" style={{ color: '#7A7A7A' }}>
-                  Range: {formatCurrencyShort(estimatedPrice! * 1.03)} – {formatCurrencyShort(estimatedPrice! * 1.07)}
+                  {market?.medianSalePrice ? 'Median sale price' : 'Average sale price'}
                 </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {market?.averageDaysOnMarket != null && (
+                  <div className="text-center">
+                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
+                      {Math.round(market.averageDaysOnMarket)}
+                    </p>
+                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>Avg days on market</p>
+                  </div>
+                )}
+                {market?.totalListings != null && (
+                  <div className="text-center">
+                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
+                      {market.totalListings.toLocaleString()}
+                    </p>
+                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>Active listings</p>
+                  </div>
+                )}
+                {market?.newListings != null && (
+                  <div className="text-center">
+                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
+                      {market.newListings.toLocaleString()}
+                    </p>
+                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>New listings</p>
+                  </div>
+                )}
+                {market?.averagePricePerSquareFoot != null && (
+                  <div className="text-center">
+                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
+                      ${Math.round(market.averagePricePerSquareFoot)}
+                    </p>
+                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>Avg $/sq ft</p>
+                  </div>
+                )}
               </div>
 
               <div
@@ -256,81 +275,10 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
                 <TrendingUp size={15} style={{ color: '#C9A84C', marginTop: '2px', flexShrink: 0 }} />
                 <p className="font-dm text-sm leading-relaxed" style={{ color: '#3A3A3A' }}>
                   The spread between a top-performing buyer's agent and an average one in most markets is{' '}
-                  <strong style={{ color: '#0D1B2A' }}>3–7%</strong> of final purchase price. On this home, that's{' '}
+                  <strong style={{ color: '#0D1B2A' }}>3–7%</strong> of final purchase price. In {city ?? 'this market'}, that's{' '}
                   <strong style={{ color: '#C9A84C' }}>{gapLow}–{gapHigh}</strong> in real dollars saved.
                 </p>
               </div>
-            </div>
-          </div>
-        )}
-
-        <PropertyIntelCard batchData={batchData ?? null} loading={!!batchLoading} />
-
-        {topComps.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Home size={13} style={{ color: '#C9A84C' }} />
-              <p className="font-dm font-medium tracking-widest uppercase text-xs" style={{ color: '#C9A84C' }}>
-                Recent Comparable Sales
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {topComps.map((comp, i) => (
-                <div
-                  key={comp.id ?? i}
-                  className="rounded-xl overflow-hidden"
-                  style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
-                >
-                  <div
-                    className="relative w-full overflow-hidden"
-                    style={{ height: '140px', backgroundColor: '#E8E4DA' }}
-                  >
-                    <PropertyPhoto address={comp.formattedAddress} />
-                    <div
-                      className="absolute top-2.5 left-2.5 w-6 h-6 rounded-full flex items-center justify-center font-dm font-semibold text-xs"
-                      style={{ backgroundColor: 'rgba(13,27,42,0.75)', color: '#C9A84C', backdropFilter: 'blur(4px)' }}
-                    >
-                      {i + 1}
-                    </div>
-                    <div
-                      className="absolute bottom-0 left-0 right-0 h-12"
-                      style={{ background: 'linear-gradient(to top, rgba(13,27,42,0.55), transparent)' }}
-                    />
-                  </div>
-                  <div className="px-4 py-3 flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-dm text-sm truncate" style={{ color: '#1A1A1A' }}>
-                        {comp.formattedAddress}
-                      </p>
-                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        {comp.bedrooms != null && (
-                          <span className="font-dm text-xs" style={{ color: '#8A8A8A' }}>{comp.bedrooms} bd</span>
-                        )}
-                        {comp.bathrooms != null && (
-                          <span className="font-dm text-xs" style={{ color: '#8A8A8A' }}>{comp.bathrooms} ba</span>
-                        )}
-                        {comp.squareFootage != null && (
-                          <span className="font-dm text-xs" style={{ color: '#8A8A8A' }}>{comp.squareFootage.toLocaleString()} sq ft</span>
-                        )}
-                        {comp.distance != null && (
-                          <span className="font-dm text-xs" style={{ color: '#8A8A8A' }}>{comp.distance.toFixed(2)} mi away</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-playfair font-semibold text-base" style={{ color: '#0D1B2A' }}>
-                        {formatCurrencyShort(comp.price)}
-                      </p>
-                      {comp.lastSoldDate && (
-                        <p className="font-dm text-xs mt-0.5" style={{ color: '#8A8A8A' }}>
-                          {new Date(comp.lastSoldDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         )}
@@ -404,7 +352,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
           </div>
         )}
 
-        {!hasPropertyData && (
+        {!hasMarketData && (
           <>
             <div className="flex items-center gap-4 mb-8">
               <div className="flex-1 h-px" style={{ backgroundColor: 'rgba(201,168,76,0.3)' }} />

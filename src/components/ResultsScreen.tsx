@@ -3,7 +3,6 @@ import ResultsFullAnalysis from './ResultsFullAnalysis';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
-import type { BatchDataResponse } from '../types/batchdata';
 
 export type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full';
 
@@ -13,8 +12,6 @@ interface ResultsScreenProps {
   addressText?: string | null;
   rentcastData?: RentcastData | null;
   rentcastLoading?: boolean;
-  batchData?: BatchDataResponse | null;
-  batchLoading?: boolean;
   onRetake: () => void;
   leadName?: string;
   leadEmail?: string;
@@ -30,8 +27,6 @@ export default function ResultsScreen({
   addressText,
   rentcastData,
   rentcastLoading,
-  batchData,
-  batchLoading,
   onRetake: _onRetake,
   leadName,
   leadEmail,
@@ -45,12 +40,11 @@ export default function ResultsScreen({
     placeDetails,
     addressText,
     rentcastData,
-    batchData,
     leadName,
     leadEmail,
     leadPhone,
     downPaymentAnswer,
-    isLoading: rentcastLoading || batchLoading,
+    isLoading: rentcastLoading,
     onNext: () => {},
   };
 
@@ -62,8 +56,6 @@ export default function ResultsScreen({
         addressText={addressText}
         rentcastData={rentcastData}
         rentcastLoading={rentcastLoading}
-        batchData={batchData}
-        batchLoading={batchLoading}
         onNext={() => onViewChange('slide1')}
       />
     );

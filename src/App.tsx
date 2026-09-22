@@ -9,7 +9,6 @@ import EvaluatingScreen from './components/EvaluatingScreen';
 import ResultsScreen from './components/ResultsScreen';
 import DevNavigator from './components/DevNavigator';
 import type { RentcastData } from './types/rentcast';
-import type { BatchDataResponse } from './types/batchdata';
 import {
   IllustrationPreparationTrap,
   IllustrationPricingGap,
@@ -171,8 +170,6 @@ function App() {
   const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(saved?.placeDetails ?? null);
   const [rentcastData, setRentcastData] = useState<RentcastData | null>(null);
   const [rentcastLoading, setRentcastLoading] = useState(false);
-  const [batchData, setBatchData] = useState<BatchDataResponse | null>(null);
-  const [batchLoading, setBatchLoading] = useState(false);
   const [leadName, setLeadName] = useState<string>(saved?.leadName ?? '');
   const [leadEmail, setLeadEmail] = useState<string>(saved?.leadEmail ?? '');
   const [leadPhone, setLeadPhone] = useState<string>(saved?.leadPhone ?? '');
@@ -209,7 +206,6 @@ function App() {
     };
 
     setRentcastLoading(true);
-    setBatchLoading(true);
 
     fetch(`${supabaseUrl}/functions/v1/rentcast-lookup`, {
       method: 'POST',
@@ -230,22 +226,6 @@ function App() {
         fetchedAddressRef.current = null;
       })
       .finally(() => setRentcastLoading(false));
-
-    fetch(`${supabaseUrl}/functions/v1/batchdata-lookup`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ address: addressToLookup }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (res.ok && data.property) setBatchData(data);
-        else console.error('[BatchData] HTTP', res.status, 'payload:', data);
-      })
-      .catch((err) => {
-        console.error('[BatchData] fetch error:', err);
-        fetchedAddressRef.current = null;
-      })
-      .finally(() => setBatchLoading(false));
   }, [phase, placeDetails, textAnswers]);
 
   function handleFirstAnswer(optionIndex: number) {
@@ -337,8 +317,8 @@ function App() {
     trackQuizProgress(currentScreenIndex, 'gate', 'Completed', TOTAL_QUESTIONS, true, _email);
 
     const propertyValue =
-      batchData?.property?.valuation?.estimatedValue ??
-      rentcastData?.avm?.price ??
+      rentcastData?.market?.medianSalePrice ??
+      rentcastData?.market?.averageSalePrice ??
       null;
 
     if (_email.trim().toLowerCase() !== 'gabrielbcarvalho2014@gmail.com') {
@@ -402,8 +382,6 @@ function App() {
     setPlaceDetails(null);
     setRentcastData(null);
     setRentcastLoading(false);
-    setBatchData(null);
-    setBatchLoading(false);
     setLeadName('');
     setLeadEmail('');
     setLeadPhone('');
@@ -488,7 +466,7 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'instant' });
       setResultsView(v);
     }
-    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} batchData={batchData} batchLoading={batchLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
+    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
   }
 
   const currentScreen = screenSequence[currentScreenIndex];

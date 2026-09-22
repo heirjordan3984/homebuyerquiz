@@ -88,14 +88,16 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     // --- Market data (with Supabase cache, 24h TTL) ---
+    // Try zip-based cache first, then lat/lng-based fetch
     let marketRaw: unknown = null;
     let marketFromCache = false;
+    const cacheKey = zip ?? (hasCoords ? `${lat.toFixed(2)},${lng.toFixed(2)}` : null);
 
-    if (zip) {
+    if (cacheKey) {
       const { data: cached } = await supabase
         .from("market_stats_cache")
         .select("payload, fetched_at")
-        .eq("zip", zip)
+        .eq("zip", cacheKey)
         .maybeSingle();
 
       if (cached && cached.fetched_at) {
@@ -107,49 +109,47 @@ Deno.serve(async (req: Request) => {
       }
 
       if (!marketRaw) {
-        const fresh = await fetchJson(
-          `${RENTCAST_BASE}/markets?zipCode=${zip}&dataType=Sale&historyRange=12`
-        );
-        if (fresh) {
-          marketRaw = fresh;
-          await supabase
-            .from("market_stats_cache")
-            .upsert({ zip, payload: fresh, fetched_at: new Date().toISOString() });
+        const marketUrl = zip
+          ? `${RENTCAST_BASE}/markets?zipCode=${zip}&dataType=Sale&historyRange=12`
+          : hasCoords
+            ? `${RENTCAST_BASE}/markets?latitude=${lat}&longitude=${lng}&dataType=Sale&historyRange=12`
+            : null;
+
+        if (marketUrl) {
+          const fresh = await fetchJson(marketUrl);
+          if (fresh) {
+            marketRaw = fresh;
+            await supabase
+              .from("market_stats_cache")
+              .upsert({ zip: cacheKey, payload: fresh, fetched_at: new Date().toISOString() });
+          }
         }
       }
     }
 
-    const avmUrl = `${RENTCAST_BASE}/avm/value?address=${encodedAddress}&compCount=5`;
-    const [avmData, listingsData] = await Promise.all([
-      fetchJson(avmUrl),
-      hasCoords
-        ? fetchJson(`${RENTCAST_BASE}/listings/sale?latitude=${lat}&longitude=${lng}&radius=2&limit=5&status=Active`)
-        : fetchJson(`${RENTCAST_BASE}/listings/sale?address=${encodedAddress}&radius=2&limit=5&status=Active`),
-    ]);
-
-    const comparables = avmData?.comparables ?? null;
-    const avmCore = avmData
-      ? {
-          price: avmData.price,
-          priceRangeLow: avmData.priceRangeLow,
-          priceRangeHigh: avmData.priceRangeHigh,
-          latitude: avmData.latitude,
-          longitude: avmData.longitude,
-        }
-      : null;
+    // --- Nearby active listings (city-level, not property-specific) ---
+    let listingsData: unknown = null;
+    if (hasCoords) {
+      listingsData = await fetchJson(
+        `${RENTCAST_BASE}/listings/sale?latitude=${lat}&longitude=${lng}&radius=5&limit=5&status=Active`
+      );
+    } else {
+      listingsData = await fetchJson(
+        `${RENTCAST_BASE}/listings/sale?address=${encodedAddress}&radius=5&limit=5&status=Active`
+      );
+    }
 
     const market = buildMarketSummary(marketRaw);
 
     return new Response(
       JSON.stringify({
-        avm: avmCore,
-        comparables,
+        avm: null,
+        comparables: null,
         nearbyListings: Array.isArray(listingsData) ? listingsData : null,
         market,
         _debug: {
-          zip,
+          zip: cacheKey,
           hasCoords,
-          avmOk: !!avmData,
           listingsOk: !!listingsData,
           marketOk: !!marketRaw,
           marketFromCache,

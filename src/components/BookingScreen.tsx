@@ -216,7 +216,7 @@ export default function BookingScreen({
       icon: Sparkles,
       title: 'Real numbers, not guesses',
       detail:
-        'See where this home stands today and what the right plan could save you on your purchase.',
+        'See where homes in your target area stand today and what the right plan could save you on your purchase.',
     },
   ];
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   TrendingUp, DollarSign, Users, BarChart3, MapPin, Clock,
   ArrowRight, Zap, Star, CheckCircle, PhoneCall, ChevronRight,
@@ -6,7 +6,7 @@ import {
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
-import type { BatchDataResponse } from '../types/batchdata';
+
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
@@ -27,7 +27,6 @@ interface SlideProps {
   addressText?: string | null;
   rentcastData?: RentcastData | null;
   rentcastLoading?: boolean;
-  batchData?: BatchDataResponse | null;
   leadName?: string;
   leadEmail?: string;
   leadPhone?: string;
@@ -478,25 +477,21 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
   const city = address.split(',')[0]?.trim() || null;
 
   const market = rentcastData?.market ?? null;
-  const avm = rentcastData?.avm ?? null;
   const nearbyListings = rentcastData?.nearbyListings ?? null;
-  const comparables = rentcastData?.comparables ?? null;
 
   const avgDays = market?.averageDaysOnMarket ? Math.round(market.averageDaysOnMarket) : null;
   const saleListRatio = market?.saleToListRatio ? (market.saleToListRatio * 100).toFixed(1) : null;
   const medianSale = market?.medianSalePrice ? formatCurrencyShort(market.medianSalePrice) : null;
-  const pricePerSqft = market?.averagePricePerSquareFoot ? `$${Math.round(market.averagePricePerSquareFoot)}` : null;
+  const pricePerSqft = market?.averagePricePerSquareFoot ? `${Math.round(market.averagePricePerSquareFoot)}` : null;
 
   const activeListings = nearbyListings?.length ?? 0;
   void activeListings;
-  const recentSales = comparables?.length ?? 0;
-  void recentSales;
 
   const marketAngle = (() => {
     if (!market) return null;
     if (market.saleToListRatio && market.saleToListRatio >= 0.99) return 'buyers';
     if (market.averageDaysOnMarket && market.averageDaysOnMarket <= 30) return 'fast';
-    if (market.medianSalePrice && avm?.price && market.medianSalePrice >= avm.price * 0.95) return 'strong';
+    if (market.medianSalePrice && market.averageDaysOnMarket && market.averageDaysOnMarket <= 45) return 'strong';
     return 'opportunity';
   })();
 
@@ -526,7 +521,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
       body: 'Homes in your area are moving fast. A well-prepared buyer with financing ready can capture the best listings before competition builds.',
     });
   } else {
-    const recentSaleCount = comparables?.length ?? 0;
+    const recentSaleCount = nearbyListings?.length ?? 0;
     const totalListingsCount = market?.totalListings ?? nearbyListings?.length ?? 0;
     const ratioNum = saleListRatio ? parseFloat(saleListRatio) : null;
 
@@ -729,26 +724,15 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
   );
 }
 
-function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchData, leadName, downPaymentAnswer, isLoading }: SlideProps) {
+function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadName, downPaymentAnswer, isLoading }: SlideProps) {
   void leadName;
   const address = placeDetails?.address ?? addressText ?? null;
-  const avm = rentcastData?.avm ?? null;
-  const estimatedPrice = batchData?.property?.valuation?.estimatedValue ?? avm?.price ?? null;
-  const priceLow = avm?.priceRangeLow ?? null;
-  const priceHigh = avm?.priceRangeHigh ?? null;
+  const market = rentcastData?.market ?? null;
+  const estimatedPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
 
   const dpIdx = downPaymentAnswer ?? 2;
-  const batchEquityPct = batchData?.property?.valuation?.equityPercent ?? null;
-  const defaultDownPaymentPct = batchEquityPct != null
-    ? Math.round(batchEquityPct)
-    : Math.round((DOWN_PAYMENT_MULTIPLIERS[dpIdx] ?? 0.52) * 100);
+  const defaultDownPaymentPct = Math.round((DOWN_PAYMENT_MULTIPLIERS[dpIdx] ?? 0.52) * 100);
   const [downPaymentPct, setDownPaymentPct] = useState(defaultDownPaymentPct);
-
-  useEffect(() => {
-    if (batchEquityPct != null) {
-      setDownPaymentPct(Math.round(batchEquityPct));
-    }
-  }, [batchEquityPct]);
 
   const downPaymentLabel = `~${downPaymentPct}%`;
   const downPaymentDescription = downPaymentPct >= 60 ? 'you have strong buying power' : downPaymentPct >= 35 ? 'you have real buying power' : 'your down payment is building';
@@ -761,11 +745,7 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
   const bestCaseSavings = estimatedDownPayment && agentGapHigh ? estimatedDownPayment + agentGapHigh : null;
   const worstCaseSavings = estimatedDownPayment && agentGapLow ? estimatedDownPayment - Math.round(estimatedDownPayment * 0.03) : null;
 
-  const lastSalePrice = batchData?.property?.sale?.lastSale?.salePrice ?? null;
-  const lastSaleYear = batchData?.property?.sale?.lastSale?.saleDate
-    ? new Date(batchData.property.sale.lastSale.saleDate).getFullYear()
-    : null;
-  const appreciation = lastSalePrice && estimatedPrice ? Math.round(estimatedPrice - lastSalePrice) : null;
+
 
   const firstName = leadName ? leadName.split(' ')[0] : null;
 
@@ -794,7 +774,7 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
             className="font-playfair font-bold leading-tight text-center mb-3"
             style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
           >
-            {firstName ? `${firstName}, Here's` : `Here's`} What You Could Save on This Home
+            {firstName ? `${firstName}, Here's` : `Here's`} What You Could Save in Your Area
           </h1>
           <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
             Based on your down payment ({downPaymentLabel}), {downPaymentDescription}. Here's the real number breakdown.
@@ -874,16 +854,11 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
                     <div className="grid grid-cols-2 gap-3 mb-5">
                       <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
                         <p className="font-dm font-medium tracking-widest uppercase mb-1.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
-                          Home Value
+                          Median Price
                         </p>
                         <p className="font-playfair font-semibold text-lg" style={{ color: '#0D1B2A' }}>
                           {formatCurrencyShort(estimatedPrice)}
                         </p>
-                        {priceLow && priceHigh && (
-                          <p className="font-dm" style={{ fontSize: '9px', color: '#9CA3AF', marginTop: '2px' }}>
-                            {formatCurrencyShort(priceLow)}–{formatCurrencyShort(priceHigh)}
-                          </p>
-                        )}
                       </div>
                       <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.25)' }}>
                         <p className="font-dm font-medium tracking-widest uppercase mb-1.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
@@ -931,19 +906,7 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
                   </div>
                 </div>
 
-                {appreciation && lastSaleYear && (
-                  <div
-                    className="rounded-xl px-5 py-4 mb-6 flex items-start gap-3"
-                    style={{ backgroundColor: '#F0FDF4', border: '1px solid rgba(45,106,79,0.25)' }}
-                  >
-                    <TrendingUp size={14} style={{ color: '#2D6A4F', flexShrink: 0, marginTop: '2px' }} />
-                    <p className="font-dm text-sm leading-relaxed" style={{ color: '#3A3A3A' }}>
-                      This home has appreciated approximately{' '}
-                      <strong style={{ color: '#2D6A4F' }}>{formatCurrencyShort(appreciation)}</strong>{' '}
-                      since {lastSaleYear}. That's equity the current owner built — and your opportunity to negotiate from informed data.
-                    </p>
-                  </div>
-                )}
+
               </>
             ) : (
               <div className="space-y-3 mb-8">
@@ -1004,7 +967,7 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
                   className="font-playfair text-white leading-snug mb-4"
                   style={{ fontSize: 'clamp(1.15rem, 4vw, 1.875rem)' }}
                 >
-                  This home is listed at {formatCurrencyShort(estimatedPrice)}. The right agent could save you{' '}
+                  The median home price in your area is {formatCurrencyShort(estimatedPrice)}. The right agent could save you{' '}
                   <span style={{ color: '#C9A84C' }}>
                     {formatCurrencyShort(Math.round(estimatedPrice * 0.03))}–{formatCurrencyShort(Math.round(estimatedPrice * 0.07))}.
                   </span>
@@ -1018,7 +981,7 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
                 <div className="flex flex-col sm:flex-row items-center gap-3 justify-center mb-2">
                   <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
                     <ChevronRight size={12} style={{ color: '#C9A84C' }} />
-                    <span>Estimated value: {formatCurrencyShort(estimatedPrice)}</span>
+                    <span>Median price: {formatCurrencyShort(estimatedPrice)}</span>
                   </div>
                   <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
                     <ChevronRight size={12} style={{ color: '#C9A84C' }} />
@@ -1035,9 +998,9 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, batchD
   );
 }
 
-function Slide3BookCall({ result, rentcastData, batchData, leadName, downPaymentAnswer }: SlideProps) {
-  const avm = rentcastData?.avm ?? null;
-  const estimatedPrice = avm?.price ?? batchData?.property?.valuation?.estimatedValue ?? null;
+function Slide3BookCall({ result, rentcastData, leadName, downPaymentAnswer }: SlideProps) {
+  const market = rentcastData?.market ?? null;
+  const estimatedPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
   const agentGapHigh = estimatedPrice ? formatCurrencyShort(Math.round(estimatedPrice * 0.08)) : null;
 
   const dpIdx = downPaymentAnswer ?? 2;
@@ -1047,8 +1010,8 @@ function Slide3BookCall({ result, rentcastData, batchData, leadName, downPayment
   const firstName = leadName ? leadName.split(' ')[0] : null;
 
   const advisorBullets = [
-    'Review your specific target home and market position',
-    'Give you a frank assessment of what this home is realistically worth',
+    'Review your target area and market position',
+    'Give you a frank assessment of what homes in this market are realistically worth',
     'Show you exactly how much the right strategy could save you on the purchase',
     'Connect you — if it makes sense — with a vetted local expert who specializes in buyers like you',
   ];
@@ -1108,7 +1071,7 @@ function Slide3BookCall({ result, rentcastData, batchData, leadName, downPayment
 
             <p className="font-playfair text-white text-xl leading-snug mb-2">
               {estimatedPrice
-                ? `This home could save you ${estimatedDownPayment ?? 'significant savings'}`
+                ? `Your purchase in this area could save you ${estimatedDownPayment ?? 'significant savings'}`
                 : 'Your purchase holds real opportunity — let\'s unlock it'}
             </p>
             {estimatedPrice && agentGapHigh && (
