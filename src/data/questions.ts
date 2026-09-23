@@ -142,7 +142,6 @@ export const questions: Question[] = [
       "Excellent (740+)",
       "Good (670-739)",
       "Fair (580-669)",
-      "Not sure / rather not say",
     ],
   },
   {
