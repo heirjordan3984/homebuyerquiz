@@ -86,7 +86,8 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
           fontWeight: 400,
         }}
       >
-        New 60-second FREE tool reveals exactly what you can offer before you walk in the door.
+        New 60-second FREE tool reveals exactly what you can offer before you walk in the door.{' '}
+        <span style={{ fontWeight: 600, color: '#0D1B2A', textDecoration: 'underline', textDecorationColor: '#C9A84C', textDecorationThickness: '2px', textUnderlineOffset: '3px' }}>No credit check required.</span>
       </h2>
 
       {/* Stat badges */}
