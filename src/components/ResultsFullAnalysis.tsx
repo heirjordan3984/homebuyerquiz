@@ -1,4 +1,4 @@
-import { TrendingUp, MapPin, ExternalLink, Home, Clock, TrendingDown } from 'lucide-react';
+import { TrendingUp, MapPin, ExternalLink, Clock, TrendingDown } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
@@ -178,78 +178,67 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
           </h1>
         </div>
 
-        {/* Average home value banner */}
+        {/* Area summary: address + average home value + budget */}
         <div
           className="mb-8 rounded-2xl overflow-hidden"
           style={{ border: '1.5px solid #E8E0C8' }}
         >
-          <div className="px-6 py-5 flex items-center gap-4" style={{ backgroundColor: '#0D1B2A' }}>
-            <div
-              className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: 'rgba(201,168,76,0.2)' }}
-            >
-              <Home size={18} style={{ color: '#C9A84C' }} />
-            </div>
-            <div className="flex-1">
-              <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '9px' }}>
-                {city ? `${city} Average Home Value` : 'Area Average Home Value'}
-              </p>
-              <p
-                className="font-playfair font-bold leading-none mt-1"
-                style={{ fontSize: 'clamp(1.75rem, 6vw, 2.5rem)', color: '#C9A84C', letterSpacing: '-0.02em' }}
+          <div className="px-5 py-4" style={{ backgroundColor: '#0D1B2A' }}>
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                style={{ backgroundColor: 'rgba(201,168,76,0.2)' }}
               >
-                {hasMarketData ? formatCurrency(medianPrice!) : rentcastLoading ? 'Loading area data…' : 'Area data unavailable'}
-              </p>
-            </div>
-            {budgetLabel && (
-              <div className="text-right shrink-0">
+                <MapPin size={15} style={{ color: '#C9A84C' }} />
+              </div>
+              <div className="flex-1 min-w-0">
                 <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
-                  Your Budget
+                  Target Area
                 </p>
-                <p className="font-dm font-semibold text-sm" style={{ color: '#FFFFFF' }}>
-                  {budgetLabel}
+                <p className="font-dm text-sm truncate" style={{ color: '#FFFFFF' }}>
+                  {placeDetails?.address ?? addressText ?? city ?? 'Your Area'}
                 </p>
               </div>
-            )}
+              {placeDetails?.mapsUrl && (
+                <a
+                  href={placeDetails.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 font-dm text-xs font-medium shrink-0 transition-colors duration-150 px-3 py-1.5 rounded-lg"
+                  style={{ color: '#C9A84C', backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'rgba(201,168,76,0.18)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'rgba(201,168,76,0.1)'; }}
+                >
+                  Maps
+                  <ExternalLink size={11} strokeWidth={2} />
+                </a>
+              )}
+            </div>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
+                  {market?.medianSalePrice ? 'Median Sale Price' : listingAverage ? 'Avg Active Listing Price' : 'Average Home Value'}
+                </p>
+                <p
+                  className="font-playfair font-bold leading-none mt-1"
+                  style={{ fontSize: 'clamp(1.75rem, 6vw, 2.5rem)', color: '#C9A84C', letterSpacing: '-0.02em' }}
+                >
+                  {hasMarketData ? formatCurrency(medianPrice!) : rentcastLoading ? 'Loading…' : 'Unavailable'}
+                </p>
+              </div>
+              {budgetLabel && (
+                <div className="text-right shrink-0">
+                  <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
+                    Your Budget
+                  </p>
+                  <p className="font-dm font-semibold text-sm" style={{ color: '#FFFFFF' }}>
+                    {budgetLabel}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-
-        {(placeDetails || addressText) && (
-          <div
-            className="mb-8 rounded-xl flex items-center gap-4 p-4"
-            style={{ backgroundColor: '#F9F7F2', border: '1.5px solid #E8E0C8' }}
-          >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: '#EDE6D6' }}
-            >
-              <MapPin size={16} style={{ color: '#C9A84C' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '9px', color: '#8A8A8A' }}>
-                Target Area
-              </p>
-              <p className="font-dm text-sm truncate" style={{ color: '#1A1A1A' }}>
-                {placeDetails?.address ?? addressText}
-              </p>
-            </div>
-            {placeDetails?.mapsUrl && (
-              <a
-                href={placeDetails.mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 font-dm text-xs font-medium shrink-0 transition-colors duration-150 px-3 py-1.5 rounded-lg"
-                style={{ color: '#C9A84C', backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'rgba(201,168,76,0.18)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'rgba(201,168,76,0.1)'; }}
-              >
-                Maps
-                <ExternalLink size={11} strokeWidth={2} />
-              </a>
-            )}
-          </div>
-        )}
 
         {rentcastLoading && !hasMarketData && (placeDetails || addressText) && (
           <div
@@ -276,39 +265,17 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
             style={{ border: '1.5px solid #E8E0C8' }}
           >
             <div
-              className="px-6 py-4 flex items-center gap-3"
-              style={{ backgroundColor: '#0D1B2A' }}
+              className="px-5 py-3 flex items-center gap-2"
+              style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.15)' }}
             >
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: 'rgba(201,168,76,0.2)' }}
-              >
-                <TrendingUp size={15} style={{ color: '#C9A84C' }} />
-              </div>
-              <div>
-                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '9px' }}>
-                  Market Snapshot
-                </p>
-                <p className="font-playfair text-white text-sm leading-snug">
-                  {city ? `${city} Area Market Data` : 'Area Market Data'}
-                </p>
-              </div>
+              <TrendingUp size={12} style={{ color: '#C9A84C' }} />
+              <p className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>
+                Market Details
+              </p>
             </div>
 
-            <div className="px-6 py-7" style={{ backgroundColor: '#F9F7F2' }}>
-              <div className="text-center mb-6">
-                <p
-                  className="font-playfair font-bold leading-none mb-2"
-                  style={{ fontSize: 'clamp(2.25rem, 8vw, 3.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em' }}
-                >
-                  {formatCurrency(medianPrice!)}
-                </p>
-                <p className="font-dm text-sm" style={{ color: '#7A7A7A' }}>
-                  {market?.medianSalePrice ? 'Median sale price' : listingAverage ? 'Average active listing price' : 'Average home value'}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="px-6 py-5" style={{ backgroundColor: '#F9F7F2' }}>
+              <div className="grid grid-cols-2 gap-4 mb-5">
                 {market?.averageDaysOnMarket != null && (
                   <div className="text-center">
                     <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
