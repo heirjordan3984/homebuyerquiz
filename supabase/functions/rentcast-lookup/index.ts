@@ -33,8 +33,10 @@ function extractZip(address: string): string | null {
 
 function buildMarketSummary(marketData: unknown) {
   if (!marketData || typeof marketData !== 'object') return null;
-  const raw = marketData as Record<string, unknown>;
-  const saleData = (raw.saleData ?? raw) as Record<string, unknown> | undefined;
+  const raw = (Array.isArray(marketData) ? marketData[0] : marketData) as Record<string, unknown> | undefined;
+  if (!raw || typeof raw !== 'object') return null;
+  const saleDataRaw = raw.saleData ?? raw.data ?? raw;
+  const saleData = (Array.isArray(saleDataRaw) ? saleDataRaw[0] : saleDataRaw) as Record<string, unknown> | undefined;
   if (!saleData || typeof saleData !== 'object') return null;
 
   const historyRaw = (saleData.history ?? {}) as Record<string, Record<string, unknown>>;
@@ -172,13 +174,24 @@ Deno.serve(async (req: Request) => {
     }
 
     const market = buildMarketSummary(marketRaw);
+    const listingValues = Array.isArray(filteredListings)
+      ? filteredListings
+          .map((listing) => (listing as Record<string, unknown>).price)
+          .filter((price): price is number => typeof price === 'number')
+      : [];
+    const fallbackAveragePrice = listingValues.length > 0
+      ? Math.round(listingValues.reduce((sum, price) => sum + price, 0) / listingValues.length)
+      : null;
+    const resolvedMarket = market ?? (fallbackAveragePrice
+      ? { averageSalePrice: fallbackAveragePrice, medianSalePrice: fallbackAveragePrice, history: [] }
+      : null);
 
     return new Response(
       JSON.stringify({
         avm: null,
         comparables: null,
         nearbyListings: filteredListings.length > 0 ? filteredListings : null,
-        market,
+        market: resolvedMarket,
         _debug: {
           zip: cacheKey,
           hasCoords,

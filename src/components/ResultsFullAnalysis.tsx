@@ -115,7 +115,13 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
     return parts.length >= 1 ? parts[0].trim() : null;
   })();
 
-  const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
+  const listingPrices = nearbyListings
+    ?.map((listing) => listing.price)
+    .filter((price): price is number => typeof price === 'number') ?? [];
+  const listingAverage = listingPrices.length > 0
+    ? Math.round(listingPrices.reduce((sum, price) => sum + price, 0) / listingPrices.length)
+    : null;
+  const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? listingAverage;
   const hasMarketData = medianPrice !== null;
   const [gapLow, gapHigh] = hasMarketData ? calcAgentGap(medianPrice!) : ['$15K', '$35K'];
 
@@ -192,7 +198,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
                 className="font-playfair font-bold leading-none mt-1"
                 style={{ fontSize: 'clamp(1.75rem, 6vw, 2.5rem)', color: '#C9A84C', letterSpacing: '-0.02em' }}
               >
-                {hasMarketData ? formatCurrency(medianPrice!) : 'Data loading…'}
+                {hasMarketData ? formatCurrency(medianPrice!) : rentcastLoading ? 'Loading area data…' : 'Area data unavailable'}
               </p>
             </div>
             {budgetLabel && (
@@ -298,7 +304,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
                   {formatCurrency(medianPrice!)}
                 </p>
                 <p className="font-dm text-sm" style={{ color: '#7A7A7A' }}>
-                  {market?.medianSalePrice ? 'Median sale price' : 'Average sale price'}
+                  {market?.medianSalePrice ? 'Median sale price' : listingAverage ? 'Average active listing price' : 'Average home value'}
                 </p>
               </div>
 
