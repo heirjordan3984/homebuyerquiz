@@ -259,6 +259,21 @@ export default function AdminDashboard() {
               />
             </div>
 
+            {/* Pie charts: Credit + Timeline */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {(() => {
+                const creditStat = stats.answerStats.find((s) => s.questionId === 12);
+                const timelineStat = stats.answerStats.find((s) => s.questionId === 4);
+                if (!creditStat && !timelineStat) return null;
+                return (
+                  <>
+                    {creditStat && <PieChartCard stat={creditStat} colors={['#2D6A4F', '#C9A84C', '#B5530A']} />}
+                    {timelineStat && <PieChartCard stat={timelineStat} colors={['#0D1B2A', '#2D6A4F', '#C9A84C', '#B5530A', '#8A8A8A']} />}
+                  </>
+                );
+              })()}
+            </div>
+
             {/* Two-column: Drop-off + Daily trend */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Drop-off Analysis */}
@@ -545,6 +560,93 @@ function DailyTrendChart({ trend }: { trend: DailyTrend[] }) {
           <span className="w-3 h-3 rounded" style={{ backgroundColor: '#E0DAD0' }} />
           Starts
         </span>
+      </div>
+    </div>
+  );
+}
+
+function PieChartCard({ stat, colors }: { stat: AnswerStat; colors: string[] }) {
+  const total = stat.options.reduce((sum, o) => sum + o.count, 0);
+  const radius = 70;
+  const strokeWidth = 28;
+  const circumference = 2 * Math.PI * radius;
+  let cumulative = 0;
+
+  return (
+    <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#E0DAD0', backgroundColor: 'white' }}>
+      <div className="px-5 py-4 border-b" style={{ borderColor: '#F0EDE8' }}>
+        <div className="flex items-center gap-2">
+          <span
+            className="text-xs uppercase tracking-wide"
+            style={{ color: '#C9A84C' }}
+          >
+            Q{stat.questionId} · {stat.topic}
+          </span>
+        </div>
+        <h2 className="font-playfair font-semibold text-base mt-0.5" style={{ color: '#0D1B2A' }}>
+          {stat.question}
+        </h2>
+      </div>
+      <div className="px-5 py-5 flex flex-col sm:flex-row items-center gap-5">
+        <svg width={180} height={180} viewBox="0 0 180 180" className="shrink-0">
+          <circle cx={90} cy={90} r={radius} fill="none" stroke="#F0EDE8" strokeWidth={strokeWidth} />
+          {total > 0 && stat.options.map((opt, i) => {
+            const fraction = opt.count / total;
+            const dash = fraction * circumference;
+            const offset = -cumulative * circumference;
+            cumulative += fraction;
+            if (opt.count === 0) return null;
+            return (
+              <circle
+                key={i}
+                cx={90}
+                cy={90}
+                r={radius}
+                fill="none"
+                stroke={colors[i % colors.length]}
+                strokeWidth={strokeWidth}
+                strokeDasharray={`${dash} ${circumference - dash}`}
+                strokeDashoffset={offset}
+                transform="rotate(-90 90 90)"
+                style={{ transition: 'stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease' }}
+              />
+            );
+          })}
+          {total === 0 && (
+            <text x={90} y={95} textAnchor="middle" className="font-dm" style={{ fontSize: 13, fill: '#8A8A8A' }}>
+              No data
+            </text>
+          )}
+          {total > 0 && (
+            <>
+              <text x={90} y={86} textAnchor="middle" className="font-playfair" style={{ fontSize: 26, fontWeight: 700, fill: '#0D1B2A' }}>
+                {total}
+              </text>
+              <text x={90} y={104} textAnchor="middle" className="font-dm" style={{ fontSize: 11, fill: '#8A8A8A' }}>
+                responses
+              </text>
+            </>
+          )}
+        </svg>
+        <div className="flex-1 space-y-2 w-full">
+          {stat.options.map((opt, i) => {
+            const pct = total > 0 ? ((opt.count / total) * 100).toFixed(0) : '0';
+            return (
+              <div key={i} className="flex items-center gap-2.5">
+                <span
+                  className="w-3 h-3 rounded-sm shrink-0"
+                  style={{ backgroundColor: opt.count > 0 ? colors[i % colors.length] : '#E0DAD0' }}
+                />
+                <span className="text-xs flex-1 truncate" style={{ color: '#3A3A3A' }}>
+                  {opt.label}
+                </span>
+                <span className="text-xs font-semibold shrink-0" style={{ color: '#5A6573' }}>
+                  {opt.count} ({pct}%)
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
