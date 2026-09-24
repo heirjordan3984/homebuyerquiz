@@ -450,14 +450,6 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
   const insights: { icon: React.ElementType; title: string; body: string }[] = [];
 
-  if (resolvedAvgDays && resolvedAvgDays <= 45) {
-    insights.push({
-      icon: Clock,
-      title: `${resolvedAvgDays}-Day Average Time to Contract`,
-      body: `Homes in ${city ?? 'this area'} are moving fast. A well-prepared buyer with financing ready can capture the best listings before competition builds.`,
-    });
-  }
-
   if (saleListRatio) {
     const ratioNum = parseFloat(saleListRatio);
     insights.push({
