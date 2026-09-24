@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   TrendingUp, DollarSign, Users, BarChart3, MapPin, Clock,
-  ArrowRight, Zap, Star, CheckCircle, PhoneCall, ChevronRight,
+  ArrowRight, Zap, Star, CheckCircle, ChevronRight,
+  Home, Calculator, Percent, Wallet, ShieldCheck, Building2,
 } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
-import type { RentcastData } from '../types/rentcast';
-
+import type { RentcastData, RentcastMarket } from '../types/rentcast';
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
@@ -21,6 +21,16 @@ function formatCurrencyShort(value: number): string {
 
 const DOWN_PAYMENT_MULTIPLIERS = [0.18, 0.32, 0.52, 0.72];
 
+const BUDGET_RANGES: [number, number | null][] = [
+  [0, 250_000],
+  [250_000, 450_000],
+  [450_000, 700_000],
+  [700_000, 1_000_000],
+  [1_000_000, null],
+];
+
+const BUDGET_LABELS = ['Under $250K', '$250K–$450K', '$450K–$700K', '$700K–$1M', '$1M+'];
+
 interface SlideProps {
   result: QuizResult;
   placeDetails?: PlaceDetails | null;
@@ -31,12 +41,143 @@ interface SlideProps {
   leadEmail?: string;
   leadPhone?: string;
   downPaymentAnswer?: number | null;
+  budgetAnswer?: number | null;
   onNext: () => void;
   isLoading?: boolean;
   onRetake?: () => void;
 }
 
+function extractCity(address: string | null | undefined): string | null {
+  if (!address) return null;
+  const parts = address.replace(/, USA$/, '').split(',');
+  return parts.length >= 1 ? parts[0].trim() : null;
+}
 
+function extractCityState(address: string | null | undefined): string | null {
+  if (!address) return null;
+  const cleaned = address.replace(/, USA$/, '').trim();
+  return cleaned || address;
+}
+
+/* ---------- Mortgage calculation helpers ---------- */
+
+function calcMonthlyPayment(principal: number, annualRate: number, years: number): number {
+  if (annualRate <= 0) return principal / (years * 12);
+  const monthlyRate = annualRate / 12;
+  const numPayments = years * 12;
+  return (principal * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+}
+
+function calcAffordablePrice(
+  monthlyPayment: number,
+  annualRate: number,
+  downPaymentPct: number,
+  years = 30,
+): number {
+  if (annualRate <= 0) return (monthlyPayment * years * 12) / (1 - downPaymentPct);
+  const monthlyRate = annualRate / 12;
+  const numPayments = years * 12;
+  const loanFactor = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+  const maxLoan = monthlyPayment / loanFactor;
+  return maxLoan / (1 - downPaymentPct);
+}
+
+/* ---------- Fairway Home Mortgage box ---------- */
+
+function FairwayMortgageBox({ city, budgetAnswer }: { city: string | null; budgetAnswer?: number | null }) {
+  const budgetLabel = budgetAnswer != null ? BUDGET_LABELS[budgetAnswer] : null;
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden mb-6"
+      style={{ border: '1.5px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
+    >
+      <div
+        className="px-5 py-3.5 flex items-center gap-2.5"
+        style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
+      >
+        <Building2 size={14} style={{ color: '#C9A84C' }} />
+        <span className="font-dm font-medium tracking-widest uppercase text-white/70" style={{ fontSize: '12.5px' }}>
+          Recommended Lender
+        </span>
+      </div>
+
+      <div className="px-5 pt-5 pb-5">
+        <div className="flex items-start gap-3 mb-4">
+          <div
+            className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0"
+            style={{ backgroundColor: '#0D1B2A' }}
+          >
+            <span className="font-playfair font-bold text-lg" style={{ color: '#C9A84C' }}>F</span>
+          </div>
+          <div>
+            <p className="font-playfair font-semibold" style={{ fontSize: '17px', color: '#0D1B2A', lineHeight: 1.2 }}>
+              Fairway Home Mortgage
+            </p>
+            <p className="font-dm mt-0.5" style={{ fontSize: '12px', color: '#6B7280' }}>
+              Independent Mortgage Lender
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="rounded-xl px-4 py-3 mb-4"
+          style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.25)' }}
+        >
+          <p className="font-dm leading-relaxed" style={{ fontSize: '13.5px', color: '#3A3A3A' }}>
+            Getting pre-qualified is the first real step to buying a home. It tells you exactly what you can afford,
+            shows sellers you're serious, and locks in your budget before you start touring.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="rounded-lg px-2 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
+            <Clock size={13} style={{ color: '#C9A84C' }} className="mx-auto mb-1" />
+            <p className="font-dm font-medium" style={{ fontSize: '10.5px', color: '#0D1B2A' }}>Quick</p>
+            <p className="font-dm" style={{ fontSize: '9px', color: '#9CA3AF' }}>~10 min</p>
+          </div>
+          <div className="rounded-lg px-2 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
+            <ShieldCheck size={13} style={{ color: '#2D6A4F' }} className="mx-auto mb-1" />
+            <p className="font-dm font-medium" style={{ fontSize: '10.5px', color: '#0D1B2A' }}>No Cost</p>
+            <p className="font-dm" style={{ fontSize: '9px', color: '#9CA3AF' }}>Free, no obligation</p>
+          </div>
+          <div className="rounded-lg px-2 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
+            <Zap size={13} style={{ color: '#C9A84C' }} className="mx-auto mb-1" />
+            <p className="font-dm font-medium" style={{ fontSize: '10.5px', color: '#0D1B2A' }}>Strengthens</p>
+            <p className="font-dm" style={{ fontSize: '9px', color: '#9CA3AF' }}>Your offer</p>
+          </div>
+        </div>
+
+        {budgetLabel && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(45,106,79,0.06)', border: '1px solid rgba(45,106,79,0.15)' }}>
+            <Wallet size={12} style={{ color: '#2D6A4F' }} />
+            <p className="font-dm" style={{ fontSize: '12px', color: '#2D6A4F' }}>
+              Based on your <strong>{budgetLabel}</strong> range, a pre-qualification will confirm your exact buying power.
+            </p>
+          </div>
+        )}
+
+        <a
+          href="https://www.fairwayindependentmc.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full font-dm font-medium py-3.5 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+          style={{ backgroundColor: '#C9A84C', color: '#0D1B2A' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#D4B86A'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#C9A84C'; }}
+        >
+          Get Pre-Qualified with Fairway
+          <ArrowRight size={14} />
+        </a>
+        <p className="font-dm text-center mt-2" style={{ fontSize: '10px', color: '#9CA3AF' }}>
+          Soft recommendation — you're free to use any lender.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Top-Buyer Checklist ---------- */
 
 function TopBuyerChecklist() {
   const items: { title: string; detail: string }[] = [
@@ -107,251 +248,7 @@ function TopBuyerChecklist() {
   );
 }
 
-function CountyBuyerActivityCard({ city, market, cityState, medianSale, avgDays: avgDaysProp, saleListRatio, pricePerSqft }: { city: string | null; market: import('../types/rentcast').RentcastMarket | null | undefined; cityState?: string | null; medianSale?: string | null; avgDays?: number | null; saleListRatio?: string | null; pricePerSqft?: string | null }) {
-  const locationName = city ? `${city}` : 'Your Area';
-
-  const history = market?.history ?? [];
-  const last12 = history.slice(-12);
-
-  if (last12.length === 0 || last12.every(h => h.newListings == null)) {
-    return (
-      <div
-        className="rounded-xl overflow-hidden"
-        style={{ border: '1px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
-      >
-        <div
-          className="px-4 py-2.5 flex items-center justify-between"
-          style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
-        >
-          <div className="flex items-center gap-2">
-            <Users size={11} style={{ color: '#C9A84C' }} />
-            <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
-              {locationName} Market Activity
-            </span>
-          </div>
-        </div>
-        <div className="px-4 py-6 text-center">
-          <p className="font-dm" style={{ fontSize: '15px', color: '#6B7280' }}>
-            Market activity data is not available for this zip code.
-          </p>
-        </div>
-        {(medianSale || avgDaysProp || saleListRatio || pricePerSqft) && (
-          <div className="px-4 pb-4 pt-1">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <MapPin size={10} style={{ color: '#C9A84C' }} />
-              <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '9px', color: '#9CA3AF' }}>
-                {cityState ? `${cityState} Live Market Data` : 'Live Market Data'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {medianSale && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Median Sale</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#0D1B2A' }}>{medianSale}</p>
-                </div>
-              )}
-              {avgDaysProp && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Avg Days Listed</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#0D1B2A' }}>{avgDaysProp}</p>
-                </div>
-              )}
-              {saleListRatio && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Sale/List Ratio</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#2D6A4F' }}>{saleListRatio}%</p>
-                </div>
-              )}
-              {pricePerSqft && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Price / Sq Ft</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#0D1B2A' }}>{pricePerSqft}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const months = last12.map((h) => {
-    const d = new Date(h.date);
-    const label = isNaN(d.getTime())
-      ? h.key
-      : d.toLocaleString('en-US', { month: 'short' });
-    return {
-      label,
-      value: h.newListings ?? 0,
-      isHighest: false,
-    };
-  });
-
-  const maxVal = Math.max(...months.map((m) => m.value), 1);
-  months.forEach((m) => { m.isHighest = m.value === maxVal; });
-
-  const latestEntry = last12[last12.length - 1];
-  const lastMonthNewListings = latestEntry.newListings ?? 0;
-  const lastMonthTotalListings = latestEntry.totalListings ?? 0;
-
-  const avgDaysOnMarket = (
-    latestEntry.averageDaysOnMarket
-    ?? latestEntry.medianDaysOnMarket
-    ?? market?.averageDaysOnMarket
-    ?? market?.medianDaysOnMarket
-    ?? null
-  );
-
-  return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ border: '1px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
-    >
-      {/* Header */}
-      <div
-        className="px-4 py-2.5 flex items-center justify-between"
-        style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
-      >
-        <div className="flex items-center gap-2">
-          <Users size={11} style={{ color: '#C9A84C' }} />
-          <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
-            {locationName} Market Activity
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#4ADE80' }} />
-          <span className="font-dm" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>12-Month View</span>
-        </div>
-      </div>
-
-      <div className="px-4 pt-3 pb-3">
-        {/* KPI row */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div
-            className="rounded-lg px-3 py-2.5 text-center"
-            style={{ backgroundColor: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.18)' }}
-          >
-            <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8.75px', color: '#9CA3AF' }}>New Listings</p>
-            <p className="font-playfair font-semibold leading-none" style={{ fontSize: '20px', color: '#0D1B2A' }}>{lastMonthNewListings.toLocaleString()}</p>
-            <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>last month</p>
-          </div>
-          <div
-            className="rounded-lg px-3 py-2.5 text-center"
-            style={{ backgroundColor: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)' }}
-          >
-            <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8.75px', color: '#9CA3AF' }}>Active Listings</p>
-            <p className="font-playfair font-semibold leading-none" style={{ fontSize: '20px', color: '#0D1B2A' }}>{lastMonthTotalListings.toLocaleString()}</p>
-            <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>on the market</p>
-          </div>
-          <div
-            className="rounded-lg px-3 py-2.5 text-center"
-            style={{ backgroundColor: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)' }}
-          >
-            <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8.75px', color: '#9CA3AF' }}>Days on Mkt</p>
-            <p className="font-playfair font-semibold leading-none" style={{ fontSize: '20px', color: '#0D1B2A' }}>{avgDaysOnMarket != null ? Math.round(avgDaysOnMarket) : '-'}</p>
-            <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>avg days on market</p>
-          </div>
-        </div>
-
-        {/* Bar chart */}
-        <div className="mb-1">
-          <div className="flex items-end gap-1" style={{ height: '64px' }}>
-            {months.map((m, i) => {
-              const pct = (m.value / maxVal) * 100;
-              const isLast = i === months.length - 1;
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5" style={{ height: '100%' }}>
-                  <div
-                    className="w-full rounded-t-sm transition-all duration-500"
-                    style={{
-                      height: `${pct}%`,
-                      background: isLast
-                        ? 'linear-gradient(to top, #C9A84C, #E6C96A)'
-                        : m.isHighest
-                        ? 'linear-gradient(to top, #2D6A4F, #4A9E6A)'
-                        : 'linear-gradient(to top, #CBD5E1, #E2E8F0)',
-                      minHeight: '4px',
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          {/* Month labels */}
-          <div className="flex gap-1 mt-1">
-            {months.map((m, i) => (
-              <div key={i} className="flex-1 text-center">
-                <span
-                  className="font-dm"
-                  style={{
-                    fontSize: '8.75px',
-                    color: i === months.length - 1 ? '#C9A84C' : '#9CA3AF',
-                    fontWeight: i === months.length - 1 ? 600 : 400,
-                  }}
-                >
-                  {m.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center gap-4 mt-2 mb-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'linear-gradient(to top, #C9A84C, #E6C96A)' }} />
-            <span className="font-dm" style={{ fontSize: '10px', color: '#6B7280' }}>This month</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: 'linear-gradient(to top, #2D6A4F, #4A9E6A)' }} />
-            <span className="font-dm" style={{ fontSize: '10px', color: '#6B7280' }}>Peak month</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: '#CBD5E1' }} />
-            <span className="font-dm" style={{ fontSize: '10px', color: '#6B7280' }}>Other months</span>
-          </div>
-        </div>
-
-        {(medianSale || avgDaysProp || saleListRatio || pricePerSqft) && (
-          <div className="mt-4 pt-3" style={{ borderTop: '1px solid #E8E0C8' }}>
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <MapPin size={10} style={{ color: '#C9A84C' }} />
-              <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '9px', color: '#9CA3AF' }}>
-                {cityState ? `${cityState} Live Market Data` : 'Live Market Data'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {medianSale && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Median Sale</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#0D1B2A' }}>{medianSale}</p>
-                </div>
-              )}
-              {avgDaysProp && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Avg Days Listed</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#0D1B2A' }}>{avgDaysProp}</p>
-                </div>
-              )}
-              {saleListRatio && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Sale/List Ratio</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#2D6A4F' }}>{saleListRatio}%</p>
-                </div>
-              )}
-              {pricePerSqft && (
-                <div className="rounded-lg px-2.5 py-2 text-center" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E8E0C8' }}>
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>Price / Sq Ft</p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '16px', color: '#0D1B2A' }}>{pricePerSqft}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+/* ---------- Buyer Search Interest Table ---------- */
 
 function BuyerSearchInterestTable({ city }: { city: string | null }) {
   const location = city ?? 'your area';
@@ -472,114 +369,298 @@ function BuyerSearchInterestTable({ city }: { city: string | null }) {
   );
 }
 
+/* ---------- Area Market Activity Card ---------- */
+
+function AreaMarketActivityCard({ city, market, cityState, medianSale, avgDays, saleListRatio, pricePerSqft }: {
+  city: string | null;
+  market: RentcastMarket | null | undefined;
+  cityState?: string | null;
+  medianSale?: string | null;
+  avgDays?: number | null;
+  saleListRatio?: string | null;
+  pricePerSqft?: string | null;
+}) {
+  const locationName = city ? `${city}` : 'Your Area';
+
+  const history = market?.history ?? [];
+  const last12 = history.slice(-12);
+
+  if (last12.length === 0 || last12.every(h => h.newListings == null)) {
+    return (
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ border: '1px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
+      >
+        <div
+          className="px-4 py-2.5 flex items-center justify-between"
+          style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
+        >
+          <div className="flex items-center gap-2">
+            <Users size={11} style={{ color: '#C9A84C' }} />
+            <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
+              {locationName} Market Activity
+            </span>
+          </div>
+        </div>
+        <div className="px-4 py-6 text-center">
+          <p className="font-dm" style={{ fontSize: '15px', color: '#6B7280' }}>
+            Market activity data is not available for this zip code.
+          </p>
+        </div>
+        {(medianSale || avgDays || saleListRatio || pricePerSqft) && (
+          <div className="px-4 pb-4 pt-1">
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <MapPin size={10} style={{ color: '#C9A84C' }} />
+              <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '9px', color: '#9CA3AF' }}>
+                {cityState ? `${cityState} Live Market Data` : 'Live Market Data'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {medianSale && <StatBox label="Median Sale" value={medianSale} />}
+              {avgDays != null && <StatBox label="Avg Days Listed" value={String(avgDays)} />}
+              {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
+              {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const months = last12.map((h) => {
+    const d = new Date(h.date);
+    const label = isNaN(d.getTime()) ? h.key : d.toLocaleString('en-US', { month: 'short' });
+    return { label, value: h.newListings ?? 0, isHighest: false };
+  });
+
+  const maxVal = Math.max(...months.map((m) => m.value), 1);
+  months.forEach((m) => { m.isHighest = m.value === maxVal; });
+
+  const latestEntry = last12[last12.length - 1];
+  const lastMonthNewListings = latestEntry.newListings ?? 0;
+  const lastMonthTotalListings = latestEntry.totalListings ?? 0;
+  const avgDaysOnMarket = latestEntry.averageDaysOnMarket ?? latestEntry.medianDaysOnMarket ?? market?.averageDaysOnMarket ?? market?.medianDaysOnMarket ?? null;
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ border: '1px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
+    >
+      <div
+        className="px-4 py-2.5 flex items-center justify-between"
+        style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
+      >
+        <div className="flex items-center gap-2">
+          <Users size={11} style={{ color: '#C9A84C' }} />
+          <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
+            {locationName} Market Activity
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#4ADE80' }} />
+          <span className="font-dm" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>12-Month View</span>
+        </div>
+      </div>
+
+      <div className="px-4 pt-3 pb-3">
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <StatBox label="New Listings" value={lastMonthNewListings.toLocaleString()} subLabel="last month" accent="gold" />
+          <StatBox label="Active Listings" value={lastMonthTotalListings.toLocaleString()} subLabel="on the market" />
+          <StatBox label="Days on Mkt" value={avgDaysOnMarket != null ? String(Math.round(avgDaysOnMarket)) : '-'} subLabel="avg days on market" />
+        </div>
+
+        <div className="mb-1">
+          <div className="flex items-end gap-1" style={{ height: '64px' }}>
+            {months.map((m, i) => {
+              const pct = (m.value / maxVal) * 100;
+              const isLast = i === months.length - 1;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5" style={{ height: '100%' }}>
+                  <div
+                    className="w-full rounded-t-sm transition-all duration-500"
+                    style={{
+                      height: `${pct}%`,
+                      background: isLast
+                        ? 'linear-gradient(to top, #C9A84C, #E6C96A)'
+                        : m.isHighest
+                        ? 'linear-gradient(to top, #2D6A4F, #4A9E6A)'
+                        : 'linear-gradient(to top, #CBD5E1, #E2E8F0)',
+                      minHeight: '4px',
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-1 mt-1">
+            {months.map((m, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span
+                  className="font-dm"
+                  style={{
+                    fontSize: '8.75px',
+                    color: i === months.length - 1 ? '#C9A84C' : '#9CA3AF',
+                    fontWeight: i === months.length - 1 ? 600 : 400,
+                  }}
+                >
+                  {m.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 mt-2 mb-3">
+          <LegendSwatch label="This month" gradient="linear-gradient(to top, #C9A84C, #E6C96A)" />
+          <LegendSwatch label="Peak month" gradient="linear-gradient(to top, #2D6A4F, #4A9E6A)" />
+          <LegendSwatch label="Other months" color="#CBD5E1" />
+        </div>
+
+        {(medianSale || avgDays || saleListRatio || pricePerSqft) && (
+          <div className="mt-4 pt-3" style={{ borderTop: '1px solid #E8E0C8' }}>
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <MapPin size={10} style={{ color: '#C9A84C' }} />
+              <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '9px', color: '#9CA3AF' }}>
+                {cityState ? `${cityState} Live Market Data` : 'Live Market Data'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {medianSale && <StatBox label="Median Sale" value={medianSale} />}
+              {avgDays != null && <StatBox label="Avg Days Listed" value={String(avgDays)} />}
+              {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
+              {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatBox({ label, value, subLabel, valueColor, accent }: {
+  label: string;
+  value: string;
+  subLabel?: string;
+  valueColor?: string;
+  accent?: 'gold';
+}) {
+  return (
+    <div
+      className="rounded-lg px-3 py-2.5 text-center"
+      style={{
+        backgroundColor: accent === 'gold' ? 'rgba(201,168,76,0.08)' : 'rgba(74,222,128,0.06)',
+        border: accent === 'gold' ? '1px solid rgba(201,168,76,0.18)' : '1px solid rgba(74,222,128,0.2)',
+      }}
+    >
+      <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8.75px', color: '#9CA3AF' }}>{label}</p>
+      <p className="font-playfair font-semibold leading-none" style={{ fontSize: '20px', color: valueColor ?? '#0D1B2A' }}>{value}</p>
+      {subLabel && <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>{subLabel}</p>}
+    </div>
+  );
+}
+
+function LegendSwatch({ label, gradient, color }: { label: string; gradient?: string; color?: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="w-2.5 h-2.5 rounded-sm" style={{ background: gradient ?? color }} />
+      <span className="font-dm" style={{ fontSize: '10px', color: '#6B7280' }}>{label}</span>
+    </div>
+  );
+}
+
+/* ============================================================
+   SLIDE 1 — Market Intelligence for Your Area
+   ============================================================ */
+
 function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNext, isLoading, onRetake }: SlideProps) {
   const address = placeDetails?.address ?? addressText ?? 'Your Market';
-  const cityState = address.replace(/, USA$/, '').trim() || address;
-  const city = address.split(',')[0]?.trim() || null;
+  const cityState = extractCityState(address) ?? address;
+  const city = extractCity(address);
 
   const market = rentcastData?.market ?? null;
-  const nearbyListings = rentcastData?.nearbyListings ?? null;
 
   const avgDays = market?.averageDaysOnMarket ? Math.round(market.averageDaysOnMarket) : null;
   const saleListRatio = market?.saleToListRatio ? (market.saleToListRatio * 100).toFixed(1) : null;
   const medianSale = market?.medianSalePrice ? formatCurrencyShort(market.medianSalePrice) : null;
   const pricePerSqft = market?.averagePricePerSquareFoot ? `${Math.round(market.averagePricePerSquareFoot)}` : null;
 
-  const activeListings = nearbyListings?.length ?? 0;
-  void activeListings;
+  const history = market?.history ?? [];
+  const last6Months = history.slice(-6);
+  const prev6Months = history.slice(-12, -6);
+  const priceTrend = (() => {
+    if (last6Months.length === 0 || prev6Months.length === 0) return null;
+    const recentAvg = last6Months.reduce((s, h) => s + (h.medianPrice ?? 0), 0) / last6Months.length;
+    const prevAvg = prev6Months.reduce((s, h) => s + (h.medianPrice ?? 0), 0) / prev6Months.length;
+    if (prevAvg === 0) return null;
+    return ((recentAvg - prevAvg) / prevAvg) * 100;
+  })();
 
   const marketAngle = (() => {
-    if (!market) return null;
+    if (!market) return 'opportunity';
     if (market.saleToListRatio && market.saleToListRatio >= 0.99) return 'buyers';
     if (market.averageDaysOnMarket && market.averageDaysOnMarket <= 30) return 'fast';
-    if (market.medianSalePrice && market.averageDaysOnMarket && market.averageDaysOnMarket <= 45) return 'strong';
     return 'opportunity';
   })();
 
   const headlineMap: Record<string, string> = {
-    buyers: `Here's Why Right Now Is the Window:`,
-    fast: `Here's Why Right Now Is the Window:`,
-    strong: `Here's Why Right Now Is the Window:`,
-    opportunity: `Here's Why Right Now Is the Window:`,
+    buyers: `${city ?? 'Your Area'} Is a Fast-Moving Market`,
+    fast: `${city ?? 'Your Area'} Homes Are Selling Fast`,
+    opportunity: `${city ?? 'Your Area'} Has Real Opportunity Right Now`,
   };
 
   const subheadMap: Record<string, string> = {
-    buyers: `Inventory is tight. Buyers who move fast with strong offers are winning homes, often at or below asking.`,
-    fast: `${avgDays ? `The average home nearby goes under contract in just ${avgDays} days. ` : ''}That's not luck. It's a market where prepared buyers are ready to act.`,
-    strong: `Even in a shifting national landscape, your local market shows resilience. Median prices are holding, which means now is still a compelling time to buy.`,
-    opportunity: ``,
+    buyers: `Inventory is tight and homes are going under contract quickly. Buyers who move with financing ready are winning.`,
+    fast: avgDays ? `The average home here goes under contract in just ${avgDays} days. Prepared buyers with pre-approval letters are the ones getting accepted offers.` : `Prepared buyers with pre-approval letters are the ones getting accepted offers.`,
+    opportunity: `Prices are holding steady${priceTrend !== null ? (priceTrend >= 0 ? ' and trending up' : ' but softening') : ''}. Well-prepared buyers have room to negotiate.`,
   };
 
-  const headline = headlineMap[marketAngle ?? 'opportunity'];
-  const subhead = subheadMap[marketAngle ?? 'opportunity'];
+  const headline = headlineMap[marketAngle];
+  const subhead = subheadMap[marketAngle];
 
-  const motivators: { icon: React.ElementType; title: string; body: React.ReactNode }[] = [];
+  const insights: { icon: React.ElementType; title: string; body: string }[] = [];
 
   if (avgDays && avgDays <= 45) {
-    motivators.push({
+    insights.push({
       icon: Clock,
       title: `${avgDays}-Day Average Time to Contract`,
-      body: 'Homes in your area are moving fast. A well-prepared buyer with financing ready can capture the best listings before competition builds.',
-    });
-  } else {
-    const recentSaleCount = nearbyListings?.length ?? 0;
-    const totalListingsCount = market?.totalListings ?? nearbyListings?.length ?? 0;
-    const ratioNum = saleListRatio ? parseFloat(saleListRatio) : null;
-
-    let buyerBody = '';
-
-    void (() => {
-      if (recentSaleCount > 0 && ratioNum !== null && ratioNum >= 98) {
-        return `${recentSaleCount} comparable homes have closed recently at ${saleListRatio}% of asking price. Sellers aren't negotiating down, so your offer needs to be competitive.`;
-      }
-      if (recentSaleCount > 0 && avgDays) {
-        return `${recentSaleCount} comparable homes have closed nearby in an average of ${avgDays} days. Real transactions are happening, not just browsing.`;
-      }
-      if (recentSaleCount > 0 && ratioNum !== null) {
-        return `${recentSaleCount} comparable homes have closed nearby at a ${saleListRatio}% sale-to-list ratio. There's room to negotiate if you're prepared.`;
-      }
-      if (recentSaleCount > 0) {
-        return `${recentSaleCount} comparable sales have closed nearby. The market is active, not just browsing.`;
-      }
-      if (totalListingsCount > 0 && avgDays) {
-        return `${totalListingsCount} active listings are averaging ${avgDays} days on market. You have time to evaluate, but the best deals go fast.`;
-      }
-      if (ratioNum !== null && ratioNum >= 97) {
-        return `Homes are closing at ${saleListRatio}% of list price. A clear signal that sellers are firm and buyers need to come prepared.`;
-      }
-      if (avgDays) {
-        return `The average home is going under contract in ${avgDays} days. Buyers in this market need to move with intention.`;
-      }
-      if (totalListingsCount > 0) {
-        return `${totalListingsCount} active listings are on the market and you can compare carefully. The right home stands out immediately.`;
-      }
-      return `Inventory remains available relative to buyer demand. Well-priced homes attract serious offers quickly, so be ready to act.`;
-    })();
-
-    const totalSearchVolume = 36500;
-    buyerBody = `There are ${totalSearchVolume.toLocaleString()} searches each month on Google for people actively looking to buy property${city ? ` in ${city}` : ''}.`;
-
-    motivators.push({
-      icon: Clock,
-      title: 'Serious Buyers Are Active Now',
-      body: buyerBody,
+      body: `Homes in ${city ?? 'this area'} are moving fast. A well-prepared buyer with financing ready can capture the best listings before competition builds.`,
     });
   }
 
   if (saleListRatio) {
     const ratioNum = parseFloat(saleListRatio);
-    motivators.push({
+    insights.push({
       icon: TrendingUp,
       title: `${saleListRatio}% Sale-to-List Ratio`,
       body: ratioNum >= 99
-        ? 'Homes are selling at or above asking price. That means you need a strong, clean offer to win in this market.'
-        : 'Homes are selling close to list price. Correct offer strategy + strong financing = best possible deal.',
+        ? `Homes in ${city ?? 'this area'} are selling at or above asking price. You need a strong, clean offer to win.`
+        : `Homes are selling close to list price at ${saleListRatio}%. There's room to negotiate if you're prepared.`,
     });
-  } else {
-    motivators.push({
+  }
+
+  if (pricePerSqft) {
+    insights.push({
+      icon: Home,
+      title: `$${pricePerSqft}/sq ft Average`,
+      body: `The average price per square foot in ${city ?? 'this area'} is $${pricePerSqft}. This helps you compare homes apples-to-apples — a 1,500 sq ft home should run roughly $${(parseInt(pricePerSqft) * 1500).toLocaleString()}.`,
+    });
+  }
+
+  if (priceTrend !== null) {
+    insights.push({
+      icon: priceTrend >= 0 ? TrendingUp : TrendingUp,
+      title: priceTrend >= 0 ? `Prices Up ${priceTrend.toFixed(1)}% (6-mo trend)` : `Prices Down ${Math.abs(priceTrend).toFixed(1)}% (6-mo trend)`,
+      body: priceTrend >= 0
+        ? `Median prices in ${city ?? 'this area'} have risen ${priceTrend.toFixed(1)}% over the last 6 months compared to the prior 6. Waiting could cost you more in purchase price.`
+        : `Median prices have softened ${Math.abs(priceTrend).toFixed(1)}% recently. This can work in your favor — sellers may be more open to negotiation.`,
+    });
+  }
+
+  if (insights.length === 0) {
+    insights.push({
       icon: TrendingUp,
-      title: 'Offer Strategy Is Everything',
-      body: <>Homes priced correctly in the first 7 days generate 3x more interest than those that sit and reduce. <strong>Right now there are just 3 real estate professionals{city ? ` in ${city}` : ''} who consistently negotiate 16% to 20% below asking for their buyers.</strong> This market can be strong for buyers who know exactly how to find the right deals.</>,
+      title: 'Be Ready to Act',
+      body: `Market data for ${city ?? 'this area'} is limited, but the principle holds: prepared buyers with pre-approval get better deals. Start with your financing.`,
     });
   }
 
@@ -610,7 +691,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
           >
             {isLoading ? 'Analyzing Your Market…' : headline}
           </h1>
-          {!isLoading && subhead && (
+          {!isLoading && (
             <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
               {subhead}
             </p>
@@ -630,8 +711,9 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
         {!isLoading && (
           <>
+            {/* Key insights */}
             <div className="space-y-3 mb-6">
-              {motivators.filter(m => m.title !== 'Serious Buyers Are Active Now' && m.title !== 'Offer Strategy Is Everything').map((m, i) => (
+              {insights.map((m, i) => (
                 <div
                   key={i}
                   className="rounded-xl p-4 flex items-start gap-3"
@@ -651,27 +733,9 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
               ))}
             </div>
 
-            {motivators.some(m => m.title === 'Serious Buyers Are Active Now') && (() => {
-              const m = motivators.find(m => m.title === 'Serious Buyers Are Active Now')!;
-              return (
-                <div className="mb-8">
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.2)' }}
-                    >
-                      <m.icon size={13} style={{ color: '#C9A84C' }} />
-                    </div>
-                    <p className="font-dm font-semibold" style={{ color: '#0D1B2A', fontSize: '17.5px' }}>{m.title}</p>
-                  </div>
-                  <p className="font-dm leading-relaxed mb-4" style={{ color: '#6B7280', fontSize: '15px' }}>{m.body}</p>
-                  <BuyerSearchInterestTable city={city} />
-                </div>
-              );
-            })()}
-
+            {/* Market activity chart */}
             <div className="mb-6">
-              <CountyBuyerActivityCard
+              <AreaMarketActivityCard
                 city={city}
                 market={rentcastData?.market}
                 cityState={cityState}
@@ -682,29 +746,19 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
               />
             </div>
 
-            {motivators.some(m => m.title === 'Offer Strategy Is Everything') && (() => {
-              const m = motivators.find(m => m.title === 'Offer Strategy Is Everything')!;
-              return (
-                <div className="rounded-xl p-4 flex items-start gap-3 mb-6" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.2)' }}>
-                    <m.icon size={13} style={{ color: '#C9A84C' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-dm font-semibold mb-0.5" style={{ fontSize: '17.5px', color: '#0D1B2A' }}>{m.title}</p>
-                    <p className="font-dm leading-relaxed" style={{ fontSize: '15px', color: '#6B7280' }}>{m.body}</p>
-                  </div>
-                </div>
-              );
-            })()}
+            {/* Buyer search interest */}
+            <div className="mb-6">
+              <BuyerSearchInterestTable city={city} />
+            </div>
 
             <div
               className="rounded-xl px-5 py-4 mb-8 flex items-start gap-3"
               style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.3)' }}
             >
               <Zap size={14} style={{ color: '#C9A84C', flexShrink: 0, marginTop: '2px' }} />
-              <p className="font-dm leading-relaxed" style={{ fontSize: '17.5px', color: '#3A3A3A' }}>
+              <p className="font-dm leading-relaxed" style={{ fontSize: '15px', color: '#3A3A3A' }}>
                 <strong style={{ color: '#0D1B2A' }}>The bottom line:</strong>{' '}
-                {`${city ?? 'Your area'} can be a great buyer market. Early-stage buyers who start with data always end up with better outcomes. You're already ahead by doing this.`}
+                {city ? `${city} is` : 'Your area is'} a market where preparation beats speed. Knowing your budget, having financing ready, and understanding local price trends puts you ahead of most buyers.
               </p>
             </div>
           </>
@@ -717,7 +771,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D4B86A'; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A84C'; }}
         >
-          See Your Savings Potential
+          See Your Budget & Mortgage Numbers
           <ArrowRight size={15} />
         </button>
         {onRetake && (
@@ -736,30 +790,82 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
   );
 }
 
-function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadName, downPaymentAnswer, isLoading, onRetake }: SlideProps) {
-  void leadName;
-  const address = placeDetails?.address ?? addressText ?? null;
-  const market = rentcastData?.market ?? null;
-  const estimatedPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
+/* ============================================================
+   SLIDE 2 — Budget & Mortgage: What Can You Actually Afford?
+   ============================================================ */
 
-  const dpIdx = downPaymentAnswer ?? 2;
-  const defaultDownPaymentPct = Math.round((DOWN_PAYMENT_MULTIPLIERS[dpIdx] ?? 0.52) * 100);
+function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPaymentAnswer, budgetAnswer, isLoading, onNext, onRetake }: SlideProps) {
+  const city = extractCity(placeDetails?.address ?? addressText);
+  const market = rentcastData?.market ?? null;
+  const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
+
+  // User's budget range from the quiz answer
+  const userBudgetRange = budgetAnswer != null ? BUDGET_RANGES[budgetAnswer] : null;
+  const userBudgetLabel = budgetAnswer != null ? BUDGET_LABELS[budgetAnswer] : null;
+
+  // Down payment
+  const dpIdx = downPaymentAnswer ?? 1;
+  const dpMultiplier = DOWN_PAYMENT_MULTIPLIERS[dpIdx] ?? 0.32;
+  const defaultDownPaymentPct = Math.round(dpMultiplier * 100);
   const [downPaymentPct, setDownPaymentPct] = useState(defaultDownPaymentPct);
 
-  const downPaymentLabel = `~${downPaymentPct}%`;
-  const downPaymentDescription = downPaymentPct >= 60 ? 'you have strong buying power' : downPaymentPct >= 35 ? 'you have real buying power' : 'your down payment is building';
+  // Current mortgage rate environment (as of 2026, realistic range)
+  const rateLow = 6.25;
+  const rateHigh = 7.25;
+  const rateMid = (rateLow + rateHigh) / 2;
 
-  const estimatedDownPayment = estimatedPrice ? Math.round(estimatedPrice * (downPaymentPct / 100)) : null;
+  // Determine the affordable price range
+  // Use the user's budget range as the starting point, then show what they could actually afford
+  // based on a 28% DTI rule with median income estimates
 
-  const agentGapLow = estimatedDownPayment ? Math.round(estimatedDownPayment * 0.05) : null;
-  const agentGapHigh = estimatedDownPayment ? Math.round(estimatedDownPayment * 0.08) : null;
+  // If we have market data, use it to show what homes actually cost here
+  // and combine with their budget to give a realistic range
 
-  const bestCaseSavings = estimatedDownPayment && agentGapHigh ? estimatedDownPayment + agentGapHigh : null;
-  const worstCaseSavings = estimatedDownPayment && agentGapLow ? estimatedDownPayment - Math.round(estimatedDownPayment * 0.03) : null;
+  const affordablePriceLow = (() => {
+    if (userBudgetRange) return userBudgetRange[0];
+    if (medianPrice) return Math.round(medianPrice * 0.85);
+    return 250_000;
+  })();
 
+  const affordablePriceHigh = (() => {
+    if (userBudgetRange && userBudgetRange[1]) return userBudgetRange[1];
+    if (userBudgetRange && !userBudgetRange[1]) return userBudgetRange[0] * 1.5;
+    if (medianPrice) return Math.round(medianPrice * 1.15);
+    return 450_000;
+  })();
 
+  // If we have median price, blend it in to show the real picture
+  const displayLow = medianPrice
+    ? Math.min(affordablePriceLow, Math.round(medianPrice * 0.9))
+    : affordablePriceLow;
+  const displayHigh = medianPrice
+    ? Math.max(affordablePriceHigh ?? 0, Math.round(medianPrice * 1.1))
+    : affordablePriceHigh;
 
-  const firstName = leadName ? leadName.split(' ')[0] : null;
+  // Loan amounts at low and high ends
+  const loanLow = Math.round(displayLow * (1 - downPaymentPct / 100));
+  const loanHigh = Math.round(displayHigh * (1 - downPaymentPct / 100));
+
+  // Monthly payments at low/high rates for low/high prices
+  const monthlyPaymentLowRateLowPrice = Math.round(calcMonthlyPayment(loanLow, rateLow, 30));
+  const monthlyPaymentHighRateLowPrice = Math.round(calcMonthlyPayment(loanLow, rateHigh, 30));
+  const monthlyPaymentLowRateHighPrice = Math.round(calcMonthlyPayment(loanHigh, rateLow, 30));
+  const monthlyPaymentHighRateHighPrice = Math.round(calcMonthlyPayment(loanHigh, rateHigh, 30));
+
+  // Down payment dollar amounts
+  const dpLow = Math.round(displayLow * (downPaymentPct / 100));
+  const dpHigh = Math.round(displayHigh * (downPaymentPct / 100));
+
+  // What you can afford at 28% DTI (estimate using budget range midpoint)
+  const estimatedIncome = (() => {
+    if (!userBudgetRange) return 80_000;
+    const mid = userBudgetRange[1] ? (userBudgetRange[0] + userBudgetRange[1]) / 2 : userBudgetRange[0] * 1.2;
+    // Reverse-engineer income from budget: assume ~3.5x income = affordable home
+    return Math.round(mid / 3.5);
+  })();
+
+  const maxMonthlyPI = Math.round((estimatedIncome / 12) * 0.28);
+  const maxAffordablePrice = Math.round(calcAffordablePrice(maxMonthlyPI, rateMid, downPaymentPct / 100));
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
@@ -780,228 +886,416 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadNa
 
         <div className="mb-8">
           <p className="font-dm font-medium tracking-[0.12em] uppercase text-xs mb-3 text-center" style={{ color: '#C9A84C' }}>
-            Your Savings Potential
+            Your Budget & Mortgage
           </p>
           <h1
-            className="font-playfair font-bold leading-tight text-center mb-3"
+            className="font-playfair leading-tight text-center mb-3"
             style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
           >
-            {firstName ? `${firstName}, Here's` : `Here's`} What You Could Save in Your Area
+            {isLoading ? 'Calculating Your Numbers…' : `What You Can Afford in ${city ?? 'Your Area'}`}
           </h1>
-          <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
-            Based on your down payment ({downPaymentLabel}), {downPaymentDescription}. Here's the real number breakdown.
-          </p>
+          {!isLoading && (
+            <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
+              Based on your budget range{userBudgetLabel ? ` (${userBudgetLabel})` : ''} and a {downPaymentPct}% down payment, here's what your purchase could look like — with real mortgage rate and payment estimates.
+            </p>
+          )}
         </div>
 
         {isLoading && (
           <div className="space-y-4 mb-8 animate-pulse">
-            <div className="rounded-2xl p-6" style={{ backgroundColor: '#F9FAFB', border: '1.5px solid #E8E0C8' }}>
-              <div className="h-4 rounded w-32 mx-auto mb-4" style={{ backgroundColor: '#E5E7EB' }} />
-              <div className="h-12 rounded w-48 mx-auto" style={{ backgroundColor: '#E8E0C8' }} />
-            </div>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-2xl p-6" style={{ backgroundColor: '#F9FAFB', border: '1.5px solid #E8E0C8' }}>
+                <div className="h-4 rounded w-32 mx-auto mb-4" style={{ backgroundColor: '#E5E7EB' }} />
+                <div className="h-12 rounded w-48 mx-auto" style={{ backgroundColor: '#E8E0C8' }} />
+              </div>
+            ))}
           </div>
         )}
 
         {!isLoading && (
           <>
-            {estimatedPrice ? (
-              <>
-                <div
-                  className="rounded-2xl overflow-hidden mb-6"
-                  style={{ border: '1.5px solid #E8E0C8' }}
-                >
-                  <div className="px-6 py-4 flex items-center gap-3" style={{ backgroundColor: '#0D1B2A' }}>
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(201,168,76,0.2)' }}>
-                      <DollarSign size={15} style={{ color: '#C9A84C' }} />
-                    </div>
-                    <div>
-                      <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '9px' }}>
-                        Estimated Home Value
-                      </p>
-                      <p className="font-playfair text-white text-sm leading-snug">
-                        {address ? address.split(',')[0] : 'Your Target Area'}
-                      </p>
-                    </div>
-                  </div>
+            {/* Affordable price range */}
+            <div
+              className="rounded-2xl overflow-hidden mb-5"
+              style={{ border: '1.5px solid #E8E0C8' }}
+            >
+              <div className="px-5 py-3.5 flex items-center gap-2.5" style={{ backgroundColor: '#0D1B2A' }}>
+                <Home size={14} style={{ color: '#C9A84C' }} />
+                <span className="font-dm font-medium tracking-widest uppercase text-white/70" style={{ fontSize: '12.5px' }}>
+                  Your Affordable Price Range
+                </span>
+              </div>
 
-                  <div className="px-4 sm:px-6 py-5 sm:py-6" style={{ backgroundColor: '#FDFAF4' }}>
-                    <div className="text-center mb-5">
-                      <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '9px', color: '#9CA3AF' }}>
-                        Est. Down Payment ({downPaymentLabel})
-                      </p>
-                      <p className="font-playfair font-bold leading-none mb-1" style={{ fontSize: 'clamp(2rem, 7vw, 3rem)', color: '#2D6A4F', letterSpacing: '-0.02em' }}>
-                        {estimatedDownPayment ? formatCurrency(estimatedDownPayment) : '—'}
-                      </p>
-                    </div>
+              <div className="px-5 py-5" style={{ backgroundColor: '#FDFAF4' }}>
+                <div className="text-center mb-5">
+                  <p className="font-playfair font-bold leading-none mb-2" style={{ fontSize: 'clamp(1.75rem, 7vw, 2.75rem)', color: '#2D6A4F', letterSpacing: '-0.02em' }}>
+                    {formatCurrencyShort(displayLow)} – {formatCurrencyShort(displayHigh)}
+                  </p>
+                  <p className="font-dm" style={{ fontSize: '13px', color: '#6B7280' }}>
+                    {medianPrice
+                      ? `Median sale price in ${city ?? 'this area'}: ${formatCurrencyShort(medianPrice)}`
+                      : userBudgetLabel
+                        ? `Based on your stated range of ${userBudgetLabel}`
+                        : 'Estimated based on typical buyer profiles'}
+                  </p>
+                </div>
 
-                    <div className="mb-6 px-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '8px', color: '#9CA3AF' }}>
-                          Your Down Payment
-                        </p>
-                        <p className="font-dm font-semibold text-xs" style={{ color: '#0D1B2A' }}>
-                          {downPaymentPct}%
-                        </p>
-                      </div>
-                      <div className="relative">
-                        <input
-                          type="range"
-                          min={5}
-                          max={100}
-                          step={1}
-                          value={downPaymentPct}
-                          onChange={e => setDownPaymentPct(Number(e.target.value))}
-                          className="equity-slider w-full cursor-pointer"
-                          style={{
-                            background: `linear-gradient(to right, #C9A84C 0%, #C9A84C ${((downPaymentPct - 5) / 95) * 100}%, #E5E7EB ${((downPaymentPct - 5) / 95) * 100}%, #E5E7EB 100%)`,
-                          }}
-                        />
-                      </div>
-                      <div className="flex justify-between mt-1">
-                        <span className="font-dm" style={{ fontSize: '9px', color: '#C9A3AF' }}>5%</span>
-                        <span className="font-dm" style={{ fontSize: '9px', color: '#9CA3AF' }}>100%</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 mb-5">
-                      <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                        <p className="font-dm font-medium tracking-widest uppercase mb-1.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
-                          Median Price
-                        </p>
-                        <p className="font-playfair font-semibold text-lg" style={{ color: '#0D1B2A' }}>
-                          {formatCurrencyShort(estimatedPrice)}
-                        </p>
-                      </div>
-                      <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.25)' }}>
-                        <p className="font-dm font-medium tracking-widest uppercase mb-1.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
-                          Agent Impact
-                        </p>
-                        <p className="font-playfair font-semibold text-lg" style={{ color: '#C9A84C' }}>
-                          {agentGapLow && agentGapHigh ? `${formatCurrencyShort(agentGapLow)}–${formatCurrencyShort(agentGapHigh)}` : '5–8%'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {bestCaseSavings && worstCaseSavings && (
+                {/* Price range visual bar */}
+                <div className="mb-5">
+                  <div className="relative h-3 rounded-full overflow-hidden" style={{ backgroundColor: '#E5E7EB' }}>
+                    <div
+                      className="absolute h-full rounded-full"
+                      style={{
+                        left: '15%',
+                        right: '15%',
+                        background: 'linear-gradient(to right, #2D6A4F, #C9A84C)',
+                      }}
+                    />
+                    {medianPrice && (
                       <div
-                        className="rounded-xl px-4 py-4"
-                        style={{ backgroundColor: 'rgba(13,27,42,0.04)', border: '1px solid rgba(13,27,42,0.08)' }}
-                      >
-                        <p className="font-dm font-medium tracking-widest uppercase mb-3" style={{ fontSize: '8px', color: '#9CA3AF' }}>
-                          Your Potential Savings Range
-                        </p>
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                            <p className="font-dm text-xs mb-1" style={{ color: '#9CA3AF' }}>Average Agent</p>
-                            <p className="font-playfair font-semibold text-lg leading-none" style={{ color: '#6B7280' }}>
-                              {formatCurrencyShort(worstCaseSavings)}
-                            </p>
-                          </div>
-                          <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: '#F0FDF4', border: '1px solid rgba(45,106,79,0.2)' }}>
-                            <p className="font-dm text-xs mb-1" style={{ color: '#9CA3AF' }}>Right Advisor</p>
-                            <p className="font-playfair font-semibold text-lg leading-none" style={{ color: '#2D6A4F' }}>
-                              {formatCurrencyShort(bestCaseSavings)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="rounded-lg overflow-hidden mb-2" style={{ height: '6px', backgroundColor: '#E5E7EB' }}>
-                          <div
-                            className="h-full rounded-lg"
-                            style={{ width: '65%', background: 'linear-gradient(to right, #9CA3AF, #C9A84C, #2D6A4F)' }}
-                          />
-                        </div>
-                        <p className="font-dm text-xs text-center" style={{ color: '#C9A84C', fontWeight: 600 }}>
-                          Difference: {formatCurrencyShort(bestCaseSavings - worstCaseSavings)} in real dollars
-                        </p>
-                      </div>
+                        className="absolute top-0 h-full"
+                        style={{
+                          left: '50%',
+                          width: '2px',
+                          backgroundColor: '#0D1B2A',
+                          transform: 'translateX(-50%)',
+                        }}
+                      />
                     )}
                   </div>
+                  {medianPrice && (
+                    <p className="font-dm text-center mt-1.5" style={{ fontSize: '10px', color: '#9CA3AF' }}>
+                      <span style={{ color: '#0D1B2A', fontWeight: 600 }}>|</span> = area median ({formatCurrencyShort(medianPrice)})
+                    </p>
+                  )}
                 </div>
 
-
-              </>
-            ) : (
-              <div className="space-y-3 mb-8">
-                {[
-                  {
-                    icon: DollarSign,
-                    title: 'The 5–8% Agent Gap Is Real',
-                    body: `Buyers using a top-performing agent consistently save ${formatCurrencyShort(25000)}–${formatCurrencyShort(40000)} more than those who don't. The strategy around your offer is worth more than any commission you might pay.`,
-                  },
-                  {
-                    icon: TrendingUp,
-                    title: 'Every Month You Wait Has a Cost',
-                    body: 'In most markets, waiting 6 months to buy means facing higher prices, more competition, and less negotiating room.',
-                  },
-                  {
-                    icon: BarChart3,
-                    title: 'Your Down Payment Is Your Leverage',
-                    body: 'Whether you have 20% or 70% saved, that\'s buying power. The right plan turns it into a stronger offer, a better rate, or a lower monthly payment.',
-                  },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl p-4 flex items-start gap-3"
-                    style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
-                  >
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.2)' }}>
-                      <item.icon size={13} style={{ color: '#C9A84C' }} />
-                    </div>
-                    <div>
-                      <p className="font-dm font-semibold text-sm mb-0.5" style={{ color: '#0D1B2A' }}>{item.title}</p>
-                      <p className="font-dm text-xs leading-relaxed" style={{ color: '#6B7280' }}>{item.body}</p>
-                    </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl p-3.5 text-center" style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                      Conservative End
+                    </p>
+                    <p className="font-playfair font-semibold" style={{ fontSize: '18px', color: '#0D1B2A' }}>
+                      {formatCurrencyShort(displayLow)}
+                    </p>
+                    <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>
+                      Down: {formatCurrencyShort(dpLow)}
+                    </p>
                   </div>
-                ))}
+                  <div className="rounded-xl p-3.5 text-center" style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.25)' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                      Top of Range
+                    </p>
+                    <p className="font-playfair font-semibold" style={{ fontSize: '18px', color: '#0D1B2A' }}>
+                      {formatCurrencyShort(displayHigh)}
+                    </p>
+                    <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>
+                      Down: {formatCurrencyShort(dpHigh)}
+                    </p>
+                  </div>
+                </div>
               </div>
-            )}
-
-            <div className="mb-6 text-center">
-              <h2
-                className="font-playfair font-bold leading-tight"
-                style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
-              >
-                Here's how to get the best deal on your purchase
-              </h2>
             </div>
 
-            <TopBuyerChecklist />
-
-            {estimatedPrice && (
-              <div
-                className="rounded-2xl px-6 py-8 sm:p-10 text-center mb-8"
-                style={{ backgroundColor: '#0D1B2A' }}
-              >
-                <p className="font-dm font-medium tracking-widest uppercase mb-3 text-white/40" style={{ fontSize: '9px' }}>
-                  The Real Opportunity
-                </p>
-                <h2
-                  className="font-playfair text-white leading-snug mb-4"
-                  style={{ fontSize: 'clamp(1.15rem, 4vw, 1.875rem)' }}
-                >
-                  The median home price in your area is {formatCurrencyShort(estimatedPrice)}. The right agent could save you{' '}
-                  <span style={{ color: '#C9A84C' }}>
-                    {formatCurrencyShort(Math.round(estimatedPrice * 0.03))}–{formatCurrencyShort(Math.round(estimatedPrice * 0.07))}.
-                  </span>
-                </h2>
-                <p
-                  className="font-dm text-white/60 leading-relaxed mb-5 text-sm mx-auto"
-                  style={{ maxWidth: '440px' }}
-                >
-                  That's not a guarantee — it's a documented pattern. The gap between a strategically negotiated purchase and an average one in your market is real. The buyer who wins is the one who understands that before they make an offer.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center gap-3 justify-center mb-2">
-                  <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
-                    <ChevronRight size={12} style={{ color: '#C9A84C' }} />
-                    <span>Median price: {formatCurrencyShort(estimatedPrice)}</span>
+            {/* Down payment slider */}
+            <div
+              className="rounded-2xl overflow-hidden mb-5"
+              style={{ border: '1.5px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
+            >
+              <div className="px-5 py-3.5 flex items-center gap-2.5" style={{ borderBottom: '1px solid #E8E0C8' }}>
+                <Wallet size={14} style={{ color: '#C9A84C' }} />
+                <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '11px', color: '#0D1B2A' }}>
+                  Down Payment: {downPaymentPct}%
+                </span>
+              </div>
+              <div className="px-5 py-4">
+                <input
+                  type="range"
+                  min={5}
+                  max={100}
+                  step={1}
+                  value={downPaymentPct}
+                  onChange={e => setDownPaymentPct(Number(e.target.value))}
+                  className="equity-slider w-full cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #C9A84C 0%, #C9A84C ${((downPaymentPct - 5) / 95) * 100}%, #E5E7EB ${((downPaymentPct - 5) / 95) * 100}%, #E5E7EB 100%)`,
+                  }}
+                />
+                <div className="flex justify-between mt-1.5">
+                  <span className="font-dm" style={{ fontSize: '10px', color: '#9CA3AF' }}>5%</span>
+                  <span className="font-dm" style={{ fontSize: '10px', color: '#9CA3AF' }}>20%</span>
+                  <span className="font-dm" style={{ fontSize: '10px', color: '#9CA3AF' }}>50%</span>
+                  <span className="font-dm" style={{ fontSize: '10px', color: '#9CA3AF' }}>100%</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="text-center">
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                      At {formatCurrencyShort(displayLow)}
+                    </p>
+                    <p className="font-playfair font-semibold" style={{ fontSize: '17px', color: '#0D1B2A' }}>
+                      {formatCurrencyShort(dpLow)}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
-                    <ChevronRight size={12} style={{ color: '#C9A84C' }} />
-                    <span>Potential savings: {formatCurrencyShort(estimatedPrice * 0.93)} – {formatCurrencyShort(estimatedPrice * 0.97)}</span>
+                  <div className="text-center">
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                      At {formatCurrencyShort(displayHigh)}
+                    </p>
+                    <p className="font-playfair font-semibold" style={{ fontSize: '17px', color: '#0D1B2A' }}>
+                      {formatCurrencyShort(dpHigh)}
+                    </p>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Mortgage rate & monthly payment */}
+            <div
+              className="rounded-2xl overflow-hidden mb-5"
+              style={{ border: '1.5px solid #E8E0C8' }}
+            >
+              <div className="px-5 py-3.5 flex items-center gap-2.5" style={{ backgroundColor: '#0D1B2A' }}>
+                <Percent size={14} style={{ color: '#C9A84C' }} />
+                <span className="font-dm font-medium tracking-widest uppercase text-white/70" style={{ fontSize: '12.5px' }}>
+                  Expected Mortgage Rate & Monthly Payment
+                </span>
+              </div>
+
+              <div className="px-5 py-5" style={{ backgroundColor: '#FDFAF4' }}>
+                {/* Rate range */}
+                <div className="text-center mb-5">
+                  <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '9px', color: '#9CA3AF' }}>
+                    Current 30-Year Fixed Rate Range
+                  </p>
+                  <p className="font-playfair font-bold leading-none" style={{ fontSize: 'clamp(1.5rem, 6vw, 2.25rem)', color: '#0D1B2A', letterSpacing: '-0.02em' }}>
+                    {rateLow.toFixed(2)}% – {rateHigh.toFixed(2)}%
+                  </p>
+                  <p className="font-dm mt-1.5" style={{ fontSize: '11px', color: '#6B7280' }}>
+                    Rates vary by credit score, loan type, and lender. Your actual rate depends on your profile.
+                  </p>
+                </div>
+
+                {/* Payment scenarios grid */}
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{ border: '1px solid #E8E0C8' }}
+                >
+                  <div className="grid grid-cols-3 px-3 py-2" style={{ backgroundColor: '#F3F4F6', borderBottom: '1px solid #E8E0C8' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '8px', color: '#9CA3AF' }}>Scenario</p>
+                    <p className="font-dm font-medium tracking-widest uppercase text-center" style={{ fontSize: '8px', color: '#9CA3AF' }}>Rate</p>
+                    <p className="font-dm font-medium tracking-widest uppercase text-right" style={{ fontSize: '8px', color: '#9CA3AF' }}>Mo. Payment</p>
+                  </div>
+
+                  <PaymentRow label="Lower price, best rate" rate={rateLow} payment={monthlyPaymentLowRateLowPrice} highlight="green" />
+                  <PaymentRow label="Lower price, higher rate" rate={rateHigh} payment={monthlyPaymentHighRateLowPrice} />
+                  <PaymentRow label="Higher price, best rate" rate={rateLow} payment={monthlyPaymentLowRateHighPrice} />
+                  <PaymentRow label="Higher price, higher rate" rate={rateHigh} payment={monthlyPaymentHighRateHighPrice} highlight="gold" />
+                </div>
+
+                <p className="font-dm mt-3" style={{ fontSize: '10.5px', color: '#9CA3AF', lineHeight: 1.4 }}>
+                  Principal & interest only. Add ~1% of home value annually for property tax, ~$1,200/yr for insurance, and PMI if down payment is below 20%.
+                </p>
+              </div>
+            </div>
+
+            {/* What you can afford at 28% DTI */}
+            <div
+              className="rounded-2xl overflow-hidden mb-8"
+              style={{ border: '1.5px solid #E8E0C8', backgroundColor: '#0D1B2A' }}
+            >
+              <div className="px-5 py-5">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <Calculator size={14} style={{ color: '#C9A84C' }} />
+                  <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '10px', color: 'rgba(201,168,76,0.8)' }}>
+                    28% Rule: Max Affordable Payment
+                  </span>
+                </div>
+                <p className="font-dm text-white/60 leading-relaxed mb-4" style={{ fontSize: '13px' }}>
+                  Lenders typically want your monthly housing payment (P&I + taxes + insurance) at or below 28% of gross monthly income.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: 'rgba(201,168,76,0.6)' }}>
+                      Est. Max Monthly Payment
+                    </p>
+                    <p className="font-playfair font-semibold leading-none" style={{ fontSize: '22px', color: '#C9A84C' }}>
+                      {formatCurrencyShort(maxMonthlyPI)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: 'rgba(201,168,76,0.6)' }}>
+                      Max Affordable Price
+                    </p>
+                    <p className="font-playfair font-semibold leading-none" style={{ fontSize: '22px', color: '#FFFFFF' }}>
+                      {formatCurrencyShort(maxAffordablePrice)}
+                    </p>
+                  </div>
+                </div>
+                <p className="font-dm mt-3" style={{ fontSize: '10.5px', color: 'rgba(255,255,255,0.3)' }}>
+                  Estimate based on a {downPaymentPct}% down payment and {rateMid.toFixed(2)}% rate. Actual qualification depends on credit, debt, and income verification.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
+        <button
+          onClick={onNext}
+          className="w-full font-dm font-medium py-4 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+          style={{ backgroundColor: '#C9A84C', color: '#0D1B2A' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D4B86A'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A84C'; }}
+        >
+          See Your Buyer Checklist & Lender Rec
+          <ArrowRight size={15} />
+        </button>
+        {onRetake && (
+          <button
+            onClick={onRetake}
+            className="w-full font-dm font-medium py-3 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 mt-3"
+            style={{ backgroundColor: 'transparent', color: '#5A6573', border: '1px solid #E0DAD0' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F9F7F2'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+          >
+            Start Over
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PaymentRow({ label, rate, payment, highlight }: { label: string; rate: number; payment: number; highlight?: 'green' | 'gold' }) {
+  const bg = highlight === 'green' ? 'rgba(45,106,79,0.06)' : highlight === 'gold' ? 'rgba(201,168,76,0.08)' : 'transparent';
+  const labelColor = highlight === 'green' ? '#2D6A4F' : highlight === 'gold' ? '#92700F' : '#3A3A3A';
+  const paymentColor = highlight === 'green' ? '#2D6A4F' : highlight === 'gold' ? '#C9A84C' : '#0D1B2A';
+
+  return (
+    <div className="grid grid-cols-3 px-3 py-2.5 items-center" style={{ backgroundColor: bg, borderBottom: '1px solid #F0EBE0' }}>
+      <p className="font-dm" style={{ fontSize: '11.5px', color: labelColor }}>{label}</p>
+      <p className="font-dm font-medium text-center" style={{ fontSize: '12px', color: '#6B7280' }}>{rate.toFixed(2)}%</p>
+      <p className="font-playfair font-semibold text-right" style={{ fontSize: '15px', color: paymentColor }}>
+        {formatCurrencyShort(payment)}/mo
+      </p>
+    </div>
+  );
+}
+
+/* ============================================================
+   SLIDE 3 — Buyer Checklist + Fairway Home Mortgage
+   ============================================================ */
+
+function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budgetAnswer, leadName, isLoading, onRetake }: SlideProps) {
+  void leadName;
+  const city = extractCity(placeDetails?.address ?? addressText);
+  const market = rentcastData?.market ?? null;
+  const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="w-full h-1" style={{ backgroundColor: '#C9A84C' }} />
+
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div className="mb-6 text-center">
+          <span className="font-dm font-medium tracking-[0.25em] text-xs uppercase" style={{ color: '#C9A84C' }}>
+            HomeIQ
+          </span>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-2 h-1.5 rounded-full" style={{ backgroundColor: '#E5E7EB' }} />
+          <div className="w-2 h-1.5 rounded-full" style={{ backgroundColor: '#E5E7EB' }} />
+          <div className="w-6 h-1.5 rounded-full" style={{ backgroundColor: '#C9A84C' }} />
+        </div>
+
+        <div className="mb-8">
+          <p className="font-dm font-medium tracking-[0.12em] uppercase text-xs mb-3 text-center" style={{ color: '#C9A84C' }}>
+            Your Action Plan
+          </p>
+          <h1
+            className="font-playfair leading-tight text-center mb-3"
+            style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
+          >
+            {isLoading ? 'Building Your Plan…' : `${city ? city + ': ' : ''}Your Complete Buyer Playbook`}
+          </h1>
+          {!isLoading && (
+            <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
+              The checklist that separates great deals from average ones, plus your next step to get pre-qualified.
+            </p>
+          )}
+        </div>
+
+        {!isLoading && (
+          <>
+            {/* Area summary recap */}
+            {medianPrice && (
+              <div
+                className="rounded-xl px-5 py-4 mb-6 flex items-center gap-4"
+                style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
+              >
+                <div className="flex-1">
+                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>
+                    {city ? `${city} Median Sale Price` : 'Area Median Sale Price'}
+                  </p>
+                  <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
+                    {formatCurrency(medianPrice)}
+                  </p>
+                </div>
+                {market?.averageDaysOnMarket != null && (
+                  <div className="text-right">
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>
+                      Avg Days on Market
+                    </p>
+                    <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
+                      {Math.round(market.averageDaysOnMarket)}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
+
+            {/* Top-Buyer Checklist */}
+            <TopBuyerChecklist />
+
+            {/* Fairway Home Mortgage recommendation */}
+            <FairwayMortgageBox city={city} budgetAnswer={budgetAnswer} />
+
+            {/* Bottom line */}
+            <div
+              className="rounded-2xl px-6 py-8 sm:p-10 text-center mb-8"
+              style={{ backgroundColor: '#0D1B2A' }}
+            >
+              <p className="font-dm font-medium tracking-widest uppercase mb-3 text-white/40" style={{ fontSize: '9px' }}>
+                The Bottom Line
+              </p>
+              <h2
+                className="font-playfair text-white leading-snug mb-4"
+                style={{ fontSize: 'clamp(1.15rem, 4vw, 1.875rem)' }}
+              >
+                {medianPrice
+                  ? `The median home in ${city ?? 'your area'} costs ${formatCurrencyShort(medianPrice)}. Getting pre-qualified is the single fastest way to turn this data into a real purchase.`
+                  : `Getting pre-qualified is the single fastest way to turn this data into a real purchase.`}
+              </h2>
+              <p
+                className="font-dm text-white/60 leading-relaxed mb-5 text-sm mx-auto"
+                style={{ maxWidth: '440px' }}
+              >
+                You've done the research. You know the market. The buyers who win are the ones who turn knowledge into action — starting with a 10-minute pre-qualification that costs nothing.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
+                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
+                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
+                  <span>10-minute application</span>
+                </div>
+                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
+                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
+                  <span>No cost, no obligation</span>
+                </div>
+                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
+                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
+                  <span>Strengthens your offer</span>
+                </div>
+              </div>
+            </div>
           </>
         )}
 
@@ -1016,161 +1310,10 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadNa
             Start Over
           </button>
         )}
-
-      </div>
-    </div>
-  );
-}
-
-function Slide3BookCall({ result, rentcastData, leadName, downPaymentAnswer }: SlideProps) {
-  const market = rentcastData?.market ?? null;
-  const estimatedPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
-  const agentGapHigh = estimatedPrice ? formatCurrencyShort(Math.round(estimatedPrice * 0.08)) : null;
-
-  const dpIdx = downPaymentAnswer ?? 2;
-  const dpMultiplier = DOWN_PAYMENT_MULTIPLIERS[dpIdx] ?? 0.52;
-  const estimatedDownPayment = estimatedPrice ? formatCurrencyShort(Math.round(estimatedPrice * dpMultiplier)) : null;
-
-  const firstName = leadName ? leadName.split(' ')[0] : null;
-
-  const advisorBullets = [
-    'Review your target area and market position',
-    'Give you a frank assessment of what homes in this market are realistically worth',
-    'Show you exactly how much the right strategy could save you on the purchase',
-    'Connect you — if it makes sense — with a vetted local expert who specializes in buyers like you',
-  ];
-
-  const readinessBadge = {
-    'Ready to Move': { label: 'High Urgency Match', color: '#2D6A4F', bg: '#D8F3DC' },
-    'Getting Close': { label: 'Strong Candidate', color: '#B5530A', bg: '#FFF3E4' },
-    'Early Stage': { label: 'Planning Mode', color: '#1B4F72', bg: '#D6EAF8' },
-  }[result.readiness] ?? { label: 'Active Prospect', color: '#1B4F72', bg: '#D6EAF8' };
-
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
-      <div className="w-full h-1" style={{ backgroundColor: '#C9A84C' }} />
-
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-        <div className="mb-6 text-center">
-          <span className="font-dm font-medium tracking-[0.25em] text-xs uppercase" style={{ color: '#C9A84C' }}>
-            HomeIQ
-          </span>
-        </div>
-
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-2 h-1.5 rounded-full" style={{ backgroundColor: '#E5E7EB' }} />
-          <div className="w-2 h-1.5 rounded-full" style={{ backgroundColor: '#E5E7EB' }} />
-          <div className="w-6 h-1.5 rounded-full" style={{ backgroundColor: '#C9A84C' }} />
-        </div>
-
-        <div className="mb-8">
-          <p className="font-dm font-medium tracking-[0.12em] uppercase text-xs mb-3 text-center" style={{ color: '#C9A84C' }}>
-            Your Next Step
-          </p>
-          <h1
-            className="font-playfair leading-tight text-center mb-3"
-            style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
-          >
-            {firstName ? `${firstName}, You've` : `You've`} Done the Hard Part
-          </h1>
-          <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
-            Most buyers never get this far. You now have data, clarity, and a real picture of what's possible. One conversation can turn that into a plan.
-          </p>
-        </div>
-
-        <div
-          className="rounded-2xl overflow-hidden mb-6"
-          style={{ border: '1.5px solid #E8E0C8', background: 'linear-gradient(135deg, #0D1B2A 0%, #162436 100%)' }}
-        >
-          <div className="px-4 sm:px-6 py-6 sm:py-7 text-center">
-            <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5"
-              style={{ backgroundColor: readinessBadge.bg }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: readinessBadge.color }} />
-              <span className="font-dm font-medium text-xs" style={{ color: readinessBadge.color }}>
-                {readinessBadge.label}
-              </span>
-            </div>
-
-            <p className="font-playfair text-white text-xl leading-snug mb-2">
-              {estimatedPrice
-                ? `Your purchase in this area could save you ${estimatedDownPayment ?? 'significant savings'}`
-                : 'Your purchase holds real opportunity — let\'s unlock it'}
-            </p>
-            {estimatedPrice && agentGapHigh && (
-              <p className="font-dm text-white/50 text-sm mb-6">
-                The right strategy could save you up to{' '}
-                <span style={{ color: '#C9A84C', fontWeight: 600 }}>{agentGapHigh} more</span>{' '}
-                than going it alone.
-              </p>
-            )}
-
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl mb-2"
-              style={{ backgroundColor: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.2)' }}
-            >
-              <PhoneCall size={13} style={{ color: '#C9A84C' }} />
-              <span className="font-dm text-sm font-medium" style={{ color: '#C9A84C' }}>
-                Free Home Purchase Advisor Call — No Obligation
-              </span>
-            </div>
-            <p className="font-dm text-white/30 text-xs">
-              15 minutes. No pressure. Just clarity.
-            </p>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <p className="font-dm font-medium tracking-widest uppercase mb-4 text-center" style={{ fontSize: '9px', color: '#9CA3AF' }}>
-            On Your Call, Your Advisor Will:
-          </p>
-          <div className="space-y-2.5">
-            {advisorBullets.map((bullet, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <CheckCircle size={14} style={{ color: '#C9A84C', flexShrink: 0, marginTop: '2px' }} />
-                <p className="font-dm text-sm leading-relaxed" style={{ color: '#3A3A3A' }}>{bullet}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div
-          className="rounded-xl px-5 py-4 mb-8"
-          style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
-        >
-          <div className="flex items-start gap-3">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-              style={{ backgroundColor: '#EDE6D6' }}
-            >
-              <span className="font-playfair font-semibold text-sm" style={{ color: '#C9A84C' }}>A</span>
-            </div>
-            <div>
-              <p className="font-dm font-semibold text-sm mb-0.5" style={{ color: '#0D1B2A' }}>Your Home Purchase Advisor</p>
-              <p className="font-dm text-xs leading-relaxed" style={{ color: '#6B7280' }}>
-                Not a sales pitch. Not a listing agent trying to sell you a home. A trusted guide who understands the data, the market, and what it actually takes to get you the best possible deal.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {onRetake && (
-          <button
-            onClick={onRetake}
-            className="w-full font-dm font-medium py-3 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-8"
-            style={{ backgroundColor: 'transparent', color: '#5A6573', border: '1px solid #E0DAD0' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F9F7F2'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
-          >
-            Start Over
-          </button>
-        )}
-
       </div>
     </div>
   );
 }
 
 export type { SlideProps };
-export { Slide1MarketOpportunity, Slide2ProfitPotential, Slide3BookCall };
+export { Slide1MarketOpportunity, Slide2BudgetMortgage, Slide3ChecklistLender };

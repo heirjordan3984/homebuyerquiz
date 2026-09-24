@@ -1,4 +1,4 @@
-import { Slide1MarketOpportunity, Slide2ProfitPotential } from './ResultsSlides';
+import { Slide1MarketOpportunity, Slide2BudgetMortgage, Slide3ChecklistLender } from './ResultsSlides';
 import ResultsFullAnalysis from './ResultsFullAnalysis';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
@@ -46,6 +46,7 @@ export default function ResultsScreen({
     leadEmail,
     leadPhone,
     downPaymentAnswer,
+    budgetAnswer,
     isLoading: rentcastLoading,
     onNext: () => {},
     onRetake: _onRetake,
@@ -75,8 +76,17 @@ export default function ResultsScreen({
     );
   }
 
+  if (view === 'slide2') {
+    return (
+      <Slide2BudgetMortgage
+        {...commonProps}
+        onNext={() => onViewChange('slide3')}
+      />
+    );
+  }
+
   return (
-    <Slide2ProfitPotential
+    <Slide3ChecklistLender
       {...commonProps}
       onNext={() => {}}
     />
