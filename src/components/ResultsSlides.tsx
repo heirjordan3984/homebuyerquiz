@@ -1173,4 +1173,4 @@ function Slide3BookCall({ result, rentcastData, leadName, downPaymentAnswer }: S
 }
 
 export type { SlideProps };
-export { Slide1MarketOpportunity, Slide2ProfitPotential, Slide3BookCall };
+export { Slide1MarketOpportunity, Slide2ProfitPotential, Slide3BookCall, BuyerSearchInterestTable };

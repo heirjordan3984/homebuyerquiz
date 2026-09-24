@@ -1,4 +1,4 @@
-import { TrendingUp, MapPin, ExternalLink, Clock, TrendingDown } from 'lucide-react';
+import { MapPin, ExternalLink, Clock, TrendingDown } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
@@ -36,6 +36,7 @@ function mapStaticUrl(address: string): string {
 }
 
 import { useState, useEffect } from 'react';
+import { BuyerSearchInterestTable } from './ResultsSlides';
 
 type PhotoStage = 'streetview' | 'staticmap' | 'pexels';
 
@@ -91,10 +92,6 @@ function formatCurrencyShort(value: number): string {
   return `$${value.toLocaleString()}`;
 }
 
-function calcAgentGap(price: number, lowPct = 0.03, highPct = 0.07): [string, string] {
-  return [formatCurrencyShort(price * lowPct), formatCurrencyShort(price * highPct)];
-}
-
 const BUDGET_RANGES: [number, number | null][] = [
   [0, 250_000],
   [250_000, 450_000],
@@ -124,7 +121,6 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
     : null;
   const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? listingAverage;
   const hasMarketData = medianPrice !== null;
-  const [gapLow, gapHigh] = hasMarketData ? calcAgentGap(medianPrice!) : ['$15K', '$35K'];
 
   // Filter listings by budget; if too few in range, get closest to range
   const budgetRange = budgetAnswer != null ? BUDGET_RANGES[budgetAnswer] : null;
@@ -261,68 +257,8 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
         )}
 
         {hasMarketData && (
-          <div
-            className="rounded-2xl overflow-hidden mb-8"
-            style={{ border: '1.5px solid #E8E0C8' }}
-          >
-            <div
-              className="px-5 py-3 flex items-center gap-2"
-              style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.15)' }}
-            >
-              <TrendingUp size={12} style={{ color: '#C9A84C' }} />
-              <p className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>
-                Market Details
-              </p>
-            </div>
-
-            <div className="px-6 py-5" style={{ backgroundColor: '#F9F7F2' }}>
-              <div className="grid grid-cols-2 gap-4 mb-5">
-                {market?.averageDaysOnMarket != null && (
-                  <div className="text-center">
-                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
-                      {Math.round(market.averageDaysOnMarket)}
-                    </p>
-                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>Avg days on market</p>
-                  </div>
-                )}
-                {market?.totalListings != null && (
-                  <div className="text-center">
-                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
-                      {market.totalListings.toLocaleString()}
-                    </p>
-                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>Active listings</p>
-                  </div>
-                )}
-                {market?.newListings != null && (
-                  <div className="text-center">
-                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
-                      {market.newListings.toLocaleString()}
-                    </p>
-                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>New listings</p>
-                  </div>
-                )}
-                {market?.averagePricePerSquareFoot != null && (
-                  <div className="text-center">
-                    <p className="font-playfair text-lg font-semibold" style={{ color: '#0D1B2A' }}>
-                      ${Math.round(market.averagePricePerSquareFoot)}
-                    </p>
-                    <p className="font-dm text-xs mt-0.5" style={{ color: '#7A7A7A' }}>Avg $/sq ft</p>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className="rounded-xl px-5 py-4 flex items-start gap-3"
-                style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.3)' }}
-              >
-                <TrendingUp size={15} style={{ color: '#C9A84C', marginTop: '2px', flexShrink: 0 }} />
-                <p className="font-dm text-sm leading-relaxed" style={{ color: '#3A3A3A' }}>
-                  The spread between a top-performing buyer's agent and an average one in most markets is{' '}
-                  <strong style={{ color: '#0D1B2A' }}>3–7%</strong> of final purchase price. In {city ?? 'this market'}, that's{' '}
-                  <strong style={{ color: '#C9A84C' }}>{gapLow}–{gapHigh}</strong> in real dollars saved.
-                </p>
-              </div>
-            </div>
+          <div className="mb-8">
+            <BuyerSearchInterestTable city={city} />
           </div>
         )}
 
