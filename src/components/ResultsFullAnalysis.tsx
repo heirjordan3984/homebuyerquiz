@@ -173,7 +173,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
           </p>
           <h1
             className="font-playfair leading-tight"
-            style={{ fontSize: 'clamp(1.5rem, 5vw, 2.75rem)', color: '#1A1A1A' }}
+            style={{ fontSize: 'clamp(1.85rem, 6.5vw, 3.25rem)', color: '#1A1A1A' }}
           >
             {city ? `The ${city} Market Is Moving. Here's What We Know About This Market` : `Here's What We Know About This Market`}
           </h1>

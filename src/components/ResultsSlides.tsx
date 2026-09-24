@@ -510,7 +510,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
           </p>
           <h1
             className="font-playfair leading-tight text-center mb-3"
-            style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
+            style={{ fontSize: 'clamp(1.75rem, 6vw, 3rem)', color: '#0D1B2A' }}
           >
             {isLoading ? 'Analyzing Your Market…' : headline}
           </h1>
@@ -746,7 +746,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
           </p>
           <h1
             className="font-playfair leading-tight text-center mb-3"
-            style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
+            style={{ fontSize: 'clamp(1.75rem, 6vw, 3rem)', color: '#0D1B2A' }}
           >
             {isLoading ? 'Calculating Your Numbers…' : `What You Can Afford in ${city ?? 'Your Area'}`}
           </h1>
@@ -1069,7 +1069,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
           </p>
           <h1
             className="font-playfair leading-tight text-center mb-3"
-            style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.4rem)', color: '#0D1B2A' }}
+            style={{ fontSize: 'clamp(1.75rem, 6vw, 3rem)', color: '#0D1B2A' }}
           >
             {isLoading ? 'Building Your Plan…' : `${city ? city + ': ' : ''}Your Complete Buyer Playbook`}
           </h1>
