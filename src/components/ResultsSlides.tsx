@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-  TrendingUp, DollarSign, Users, BarChart3, MapPin, Clock,
+  TrendingUp, DollarSign, BarChart3, MapPin, Clock,
   ArrowRight, Zap, Star, CheckCircle, ChevronRight,
   Home, Calculator, Percent, Wallet, ShieldCheck, Building2,
 } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
-import type { RentcastData, RentcastMarket } from '../types/rentcast';
+import type { RentcastData } from '../types/rentcast';
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
@@ -369,174 +369,6 @@ function BuyerSearchInterestTable({ city }: { city: string | null }) {
   );
 }
 
-/* ---------- Area Market Activity Card ---------- */
-
-function AreaMarketActivityCard({ city, market, cityState, medianSale, avgDays, saleListRatio, pricePerSqft }: {
-  city: string | null;
-  market: RentcastMarket | null | undefined;
-  cityState?: string | null;
-  medianSale?: string | null;
-  avgDays?: number | null;
-  saleListRatio?: string | null;
-  pricePerSqft?: string | null;
-}) {
-  const locationName = city ? `${city}` : 'Your Area';
-
-  const history = market?.history ?? [];
-  const last12 = history.slice(-12);
-
-  if (last12.length === 0 || last12.every(h => h.newListings == null)) {
-    return (
-      <div
-        className="rounded-xl overflow-hidden"
-        style={{ border: '1px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
-      >
-        <div
-          className="px-4 py-2.5 flex items-center justify-between"
-          style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
-        >
-          <div className="flex items-center gap-2">
-            <Users size={11} style={{ color: '#C9A84C' }} />
-            <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
-              {locationName} Market Activity
-            </span>
-          </div>
-        </div>
-        <div className="px-4 py-6 text-center">
-          <p className="font-dm" style={{ fontSize: '15px', color: '#6B7280' }}>
-            Market activity data is not available for this zip code.
-          </p>
-        </div>
-        {(medianSale || avgDays || saleListRatio || pricePerSqft) && (
-          <div className="px-4 pb-4 pt-1">
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <MapPin size={10} style={{ color: '#C9A84C' }} />
-              <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '9px', color: '#9CA3AF' }}>
-                {cityState ? `${cityState} Live Market Data` : 'Live Market Data'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {medianSale && <StatBox label="Median Sale" value={medianSale} />}
-              {avgDays != null && <StatBox label="Avg Days Listed" value={String(avgDays)} />}
-              {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
-              {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const months = last12.map((h) => {
-    const d = new Date(h.date);
-    const label = isNaN(d.getTime()) ? h.key : d.toLocaleString('en-US', { month: 'short' });
-    return { label, value: h.newListings ?? 0, isHighest: false };
-  });
-
-  const maxVal = Math.max(...months.map((m) => m.value), 1);
-  months.forEach((m) => { m.isHighest = m.value === maxVal; });
-
-  const latestEntry = last12[last12.length - 1];
-  const lastMonthNewListings = latestEntry.newListings ?? 0;
-  const lastMonthTotalListings = latestEntry.totalListings ?? 0;
-  const avgDaysOnMarket = latestEntry.averageDaysOnMarket ?? latestEntry.medianDaysOnMarket ?? market?.averageDaysOnMarket ?? market?.medianDaysOnMarket ?? null;
-
-  return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ border: '1px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
-    >
-      <div
-        className="px-4 py-2.5 flex items-center justify-between"
-        style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
-      >
-        <div className="flex items-center gap-2">
-          <Users size={11} style={{ color: '#C9A84C' }} />
-          <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
-            {locationName} Market Activity
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#4ADE80' }} />
-          <span className="font-dm" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>12-Month View</span>
-        </div>
-      </div>
-
-      <div className="px-4 pt-3 pb-3">
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <StatBox label="New Listings" value={lastMonthNewListings.toLocaleString()} subLabel="last month" accent="gold" />
-          <StatBox label="Active Listings" value={lastMonthTotalListings.toLocaleString()} subLabel="on the market" />
-          <StatBox label="Days on Mkt" value={avgDaysOnMarket != null ? String(Math.round(avgDaysOnMarket)) : '-'} subLabel="avg days on market" />
-        </div>
-
-        <div className="mb-1">
-          <div className="flex items-end gap-1" style={{ height: '64px' }}>
-            {months.map((m, i) => {
-              const pct = (m.value / maxVal) * 100;
-              const isLast = i === months.length - 1;
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5" style={{ height: '100%' }}>
-                  <div
-                    className="w-full rounded-t-sm transition-all duration-500"
-                    style={{
-                      height: `${pct}%`,
-                      background: isLast
-                        ? 'linear-gradient(to top, #C9A84C, #E6C96A)'
-                        : m.isHighest
-                        ? 'linear-gradient(to top, #2D6A4F, #4A9E6A)'
-                        : 'linear-gradient(to top, #CBD5E1, #E2E8F0)',
-                      minHeight: '4px',
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex gap-1 mt-1">
-            {months.map((m, i) => (
-              <div key={i} className="flex-1 text-center">
-                <span
-                  className="font-dm"
-                  style={{
-                    fontSize: '8.75px',
-                    color: i === months.length - 1 ? '#C9A84C' : '#9CA3AF',
-                    fontWeight: i === months.length - 1 ? 600 : 400,
-                  }}
-                >
-                  {m.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 mt-2 mb-3">
-          <LegendSwatch label="This month" gradient="linear-gradient(to top, #C9A84C, #E6C96A)" />
-          <LegendSwatch label="Peak month" gradient="linear-gradient(to top, #2D6A4F, #4A9E6A)" />
-          <LegendSwatch label="Other months" color="#CBD5E1" />
-        </div>
-
-        {(medianSale || avgDays || saleListRatio || pricePerSqft) && (
-          <div className="mt-4 pt-3" style={{ borderTop: '1px solid #E8E0C8' }}>
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <MapPin size={10} style={{ color: '#C9A84C' }} />
-              <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '9px', color: '#9CA3AF' }}>
-                {cityState ? `${cityState} Live Market Data` : 'Live Market Data'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {medianSale && <StatBox label="Median Sale" value={medianSale} />}
-              {avgDays != null && <StatBox label="Avg Days Listed" value={String(avgDays)} />}
-              {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
-              {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function StatBox({ label, value, subLabel, valueColor, accent }: {
   label: string;
   value: string;
@@ -555,15 +387,6 @@ function StatBox({ label, value, subLabel, valueColor, accent }: {
       <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8.75px', color: '#9CA3AF' }}>{label}</p>
       <p className="font-playfair font-semibold leading-none" style={{ fontSize: '20px', color: valueColor ?? '#0D1B2A' }}>{value}</p>
       {subLabel && <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>{subLabel}</p>}
-    </div>
-  );
-}
-
-function LegendSwatch({ label, gradient, color }: { label: string; gradient?: string; color?: string }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="w-2.5 h-2.5 rounded-sm" style={{ background: gradient ?? color }} />
-      <span className="font-dm" style={{ fontSize: '10px', color: '#6B7280' }}>{label}</span>
     </div>
   );
 }
@@ -733,18 +556,40 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
               ))}
             </div>
 
-            {/* Market activity chart */}
-            <div className="mb-6">
-              <AreaMarketActivityCard
-                city={city}
-                market={rentcastData?.market}
-                cityState={cityState}
-                medianSale={medianSale}
-                avgDays={avgDays}
-                saleListRatio={saleListRatio}
-                pricePerSqft={pricePerSqft}
-              />
-            </div>
+            {/* Live market data for the user's city */}
+            {(medianSale || avgDays != null || saleListRatio || pricePerSqft) && (
+              <div className="mb-6">
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{ border: '1.5px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
+                >
+                  <div className="px-5 py-4 text-center" style={{ backgroundColor: '#0D1B2A' }}>
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <MapPin size={16} style={{ color: '#C9A84C' }} />
+                      <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '10px', color: 'rgba(201,168,76,0.7)' }}>
+                        Live Market Data
+                      </span>
+                    </div>
+                    <p className="font-playfair font-bold" style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', color: '#FFFFFF', letterSpacing: '-0.01em' }}>
+                      {city ?? 'Your Area'}
+                    </p>
+                    {cityState && cityState !== city && (
+                      <p className="font-dm mt-0.5" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
+                        {cityState}
+                      </p>
+                    )}
+                  </div>
+                  <div className="px-5 py-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {medianSale && <StatBox label="Median Sale" value={medianSale} />}
+                      {avgDays != null && <StatBox label="Avg Days Listed" value={String(avgDays)} />}
+                      {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
+                      {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Buyer search interest */}
             <div className="mb-6">
