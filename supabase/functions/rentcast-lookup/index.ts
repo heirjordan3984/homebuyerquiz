@@ -156,7 +156,7 @@ Deno.serve(async (req: Request) => {
       });
 
       if (inRange.length >= 3) {
-        filteredListings = inRange.slice(0, 5);
+        filteredListings = inRange.slice(0, 8);
       } else {
         // Not enough in-range — sort by closeness to the range midpoint
         const mid = priceMin != null && priceMax != null
@@ -166,11 +166,26 @@ Deno.serve(async (req: Request) => {
           filteredListings = all
             .filter((l) => typeof l.price === 'number')
             .sort((a, b) => Math.abs((a.price as number) - mid) - Math.abs((b.price as number) - mid))
-            .slice(0, 5);
+            .slice(0, 8);
         } else {
-          filteredListings = all.slice(0, 5);
+          filteredListings = all.slice(0, 8);
         }
       }
+
+      // Pass through full listing objects (with daysOnMarket, listedDate, etc.)
+      filteredListings = filteredListings.map((l) => {
+        const listing = l as Record<string, unknown>;
+        return {
+          id: listing.id ?? '',
+          formattedAddress: listing.formattedAddress ?? '',
+          price: typeof listing.price === 'number' ? listing.price : 0,
+          squareFootage: typeof listing.squareFootage === 'number' ? listing.squareFootage : undefined,
+          bedrooms: typeof listing.bedrooms === 'number' ? listing.bedrooms : undefined,
+          bathrooms: typeof listing.bathrooms === 'number' ? listing.bathrooms : undefined,
+          listedDate: typeof listing.listedDate === 'string' ? listing.listedDate : undefined,
+          daysOnMarket: typeof listing.daysOnMarket === 'number' ? listing.daysOnMarket : undefined,
+        };
+      });
     }
 
     const market = buildMarketSummary(marketRaw);

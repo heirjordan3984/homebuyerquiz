@@ -402,7 +402,8 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
   const market = rentcastData?.market ?? null;
 
-  const avgDays = market?.averageDaysOnMarket ? Math.round(market.averageDaysOnMarket) : null;
+  const marketAvgDays = market?.averageDaysOnMarket ? Math.round(market.averageDaysOnMarket) : null;
+  const avgDays = marketAvgDays;
   const saleListRatio = market?.saleToListRatio ? (market.saleToListRatio * 100).toFixed(1) : null;
   const medianSale = market?.medianSalePrice ? formatCurrencyShort(market.medianSalePrice) : null;
   const pricePerSqft = market?.averagePricePerSquareFoot ? `${Math.round(market.averagePricePerSquareFoot)}` : null;
@@ -411,10 +412,33 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
   const nearbyListings = rentcastData?.nearbyListings ?? null;
   const homesInBudget = nearbyListings ? nearbyListings.length : null;
 
-  // New listings last month (from most recent history entry)
+  // Derive avg days on market from active listings when the market endpoint doesn't provide it
+  const avgDaysFromListings = (() => {
+    if (!nearbyListings || nearbyListings.length === 0) return null;
+    const days = nearbyListings
+      .map((l) => l.daysOnMarket)
+      .filter((d): d is number => typeof d === 'number' && d >= 0);
+    if (days.length === 0) return null;
+    return Math.round(days.reduce((s, d) => s + d, 0) / days.length);
+  })();
+
+  const resolvedAvgDays = avgDays ?? avgDaysFromListings;
+
+  // Derive new listings count from listedDate when market history doesn't provide it
+  const newListingsFromListings = (() => {
+    if (!nearbyListings || nearbyListings.length === 0) return null;
+    const now = Date.now();
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+    return nearbyListings.filter((l) => {
+      if (!l.listedDate) return false;
+      return new Date(l.listedDate).getTime() >= thirtyDaysAgo;
+    }).length;
+  })();
+
+  // New listings last month (from most recent history entry, or derived from listings)
   const history = market?.history ?? [];
   const lastEntry = history.length > 0 ? history[history.length - 1] : null;
-  const newListingsLastMonth = lastEntry?.newListings ?? market?.newListings ?? null;
+  const newListingsLastMonth = lastEntry?.newListings ?? market?.newListings ?? newListingsFromListings;
 
   const last6Months = history.slice(-6);
   const prev6Months = history.slice(-12, -6);
@@ -441,7 +465,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
   const subheadMap: Record<string, string> = {
     buyers: `Inventory is tight and homes are going under contract quickly. Buyers who move with financing ready are winning.`,
-    fast: avgDays ? `The average home here goes under contract in just ${avgDays} days. Prepared buyers with pre-approval letters are the ones getting accepted offers.` : `Prepared buyers with pre-approval letters are the ones getting accepted offers.`,
+    fast: resolvedAvgDays ? `The average home here goes under contract in just ${resolvedAvgDays} days. Prepared buyers with pre-approval letters are the ones getting accepted offers.` : `Prepared buyers with pre-approval letters are the ones getting accepted offers.`,
     opportunity: `Prices are holding steady${priceTrend !== null ? (priceTrend >= 0 ? ' and trending up' : ' but softening') : ''}. Well-prepared buyers have room to negotiate.`,
   };
 
@@ -450,10 +474,10 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
   const insights: { icon: React.ElementType; title: string; body: string }[] = [];
 
-  if (avgDays && avgDays <= 45) {
+  if (resolvedAvgDays && resolvedAvgDays <= 45) {
     insights.push({
       icon: Clock,
-      title: `${avgDays}-Day Average Time to Contract`,
+      title: `${resolvedAvgDays}-Day Average Time to Contract`,
       body: `Homes in ${city ?? 'this area'} are moving fast. A well-prepared buyer with financing ready can capture the best listings before competition builds.`,
     });
   }
@@ -565,7 +589,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
             </div>
 
             {/* Live market data for the user's city */}
-            {(medianSale || avgDays != null || saleListRatio || pricePerSqft || homesInBudget != null || newListingsLastMonth != null) && (
+            {(medianSale || resolvedAvgDays != null || saleListRatio || pricePerSqft || homesInBudget != null || newListingsLastMonth != null) && (
               <div className="mb-6">
                 <div
                   className="rounded-2xl overflow-hidden"
@@ -591,7 +615,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
                     {/* Primary stats row */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {medianSale && <StatBox label="Median Sale" value={medianSale} />}
-                      {avgDays != null && <StatBox label="Avg Days on Market" value={String(avgDays)} subLabel="avg time to contract" />}
+                      {resolvedAvgDays != null && <StatBox label="Avg Days on Market" value={String(resolvedAvgDays)} subLabel={avgDaysFromListings != null ? 'from active listings' : 'avg time to contract'} />}
                       {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
                       {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
                     </div>
