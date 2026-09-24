@@ -1093,22 +1093,8 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
                 className="font-dm text-white/60 leading-relaxed mb-5 text-sm mx-auto"
                 style={{ maxWidth: '440px' }}
               >
-                You've done the research. You know the market. The buyers who win are the ones who turn knowledge into action — starting with a 10-minute pre-qualification that costs nothing.
+                You've done the research. You know the market. The buyers who win are the ones who turn knowledge into action.
               </p>
-              <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
-                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
-                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
-                  <span>10-minute application</span>
-                </div>
-                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
-                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
-                  <span>No cost, no obligation</span>
-                </div>
-                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
-                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
-                  <span>Strengthens your offer</span>
-                </div>
-              </div>
             </div>
           )}
         </div>
