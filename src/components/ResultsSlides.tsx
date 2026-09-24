@@ -374,7 +374,7 @@ function StatBox({ label, value, subLabel, valueColor, accent }: {
         border: accent === 'gold' ? '1px solid rgba(201,168,76,0.18)' : '1px solid rgba(74,222,128,0.2)',
       }}
     >
-      <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8.75px', color: '#9CA3AF' }}>{label}</p>
+      <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '11px', color: '#9CA3AF' }}>{label}</p>
       <p className="font-playfair font-semibold leading-none" style={{ fontSize: '20px', color: valueColor ?? '#0D1B2A' }}>{value}</p>
       {subLabel && <p className="font-dm mt-0.5" style={{ fontSize: '10px', color: '#6B7280' }}>{subLabel}</p>}
     </div>
@@ -836,7 +836,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl p-3.5 text-center" style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '11px', color: '#9CA3AF' }}>
                       Conservative End
                     </p>
                     <p className="font-playfair font-semibold" style={{ fontSize: '18px', color: '#0D1B2A' }}>
@@ -847,7 +847,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
                     </p>
                   </div>
                   <div className="rounded-xl p-3.5 text-center" style={{ backgroundColor: '#FFF8EC', border: '1px solid rgba(201,168,76,0.25)' }}>
-                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '11px', color: '#9CA3AF' }}>
                       Top of Range
                     </p>
                     <p className="font-playfair font-semibold" style={{ fontSize: '18px', color: '#0D1B2A' }}>
@@ -893,7 +893,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
                 </div>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <div className="text-center">
-                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#9CA3AF' }}>
                       At {formatCurrencyShort(displayLow)}
                     </p>
                     <p className="font-playfair font-semibold" style={{ fontSize: '17px', color: '#0D1B2A' }}>
@@ -901,7 +901,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
                     </p>
                   </div>
                   <div className="text-center">
-                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8px', color: '#9CA3AF' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#9CA3AF' }}>
                       At {formatCurrencyShort(displayHigh)}
                     </p>
                     <p className="font-playfair font-semibold" style={{ fontSize: '17px', color: '#0D1B2A' }}>
@@ -944,9 +944,9 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
                   style={{ border: '1px solid #E8E0C8' }}
                 >
                   <div className="grid grid-cols-3 px-3 py-2" style={{ backgroundColor: '#F3F4F6', borderBottom: '1px solid #E8E0C8' }}>
-                    <p className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '8px', color: '#9CA3AF' }}>Scenario</p>
-                    <p className="font-dm font-medium tracking-widest uppercase text-center" style={{ fontSize: '8px', color: '#9CA3AF' }}>Rate</p>
-                    <p className="font-dm font-medium tracking-widest uppercase text-right" style={{ fontSize: '8px', color: '#9CA3AF' }}>Mo. Payment</p>
+                    <p className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '11px', color: '#9CA3AF' }}>Scenario</p>
+                    <p className="font-dm font-medium tracking-widest uppercase text-center" style={{ fontSize: '11px', color: '#9CA3AF' }}>Rate</p>
+                    <p className="font-dm font-medium tracking-widest uppercase text-right" style={{ fontSize: '11px', color: '#9CA3AF' }}>Mo. Payment</p>
                   </div>
 
                   <PaymentRow label="Lower price, best rate" rate={rateLow} payment={monthlyPaymentLowRateLowPrice} highlight="green" />
@@ -978,7 +978,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
-                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: 'rgba(201,168,76,0.6)' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '11px', color: 'rgba(201,168,76,0.6)' }}>
                       Est. Max Monthly Payment
                     </p>
                     <p className="font-playfair font-semibold leading-none" style={{ fontSize: '22px', color: '#C9A84C' }}>
@@ -986,7 +986,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
                     </p>
                   </div>
                   <div className="rounded-xl px-4 py-3" style={{ backgroundColor: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)' }}>
-                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '8px', color: 'rgba(201,168,76,0.6)' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-1" style={{ fontSize: '11px', color: 'rgba(201,168,76,0.6)' }}>
                       Max Affordable Price
                     </p>
                     <p className="font-playfair font-semibold leading-none" style={{ fontSize: '22px', color: '#FFFFFF' }}>
@@ -1097,7 +1097,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
                 style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
               >
                 <div className="flex-1">
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>
+                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#9CA3AF' }}>
                     {city ? `${city} Median Sale Price` : 'Area Median Sale Price'}
                   </p>
                   <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
@@ -1106,7 +1106,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
                 </div>
                 {market?.averageDaysOnMarket != null && (
                   <div className="text-right">
-                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '8.5px', color: '#9CA3AF' }}>
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#9CA3AF' }}>
                       Avg Days on Market
                     </p>
                     <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>

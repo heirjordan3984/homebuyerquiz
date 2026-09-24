@@ -193,7 +193,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
                 <MapPin size={15} style={{ color: '#C9A84C' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
+                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '11px' }}>
                   Target Area
                 </p>
                 <p className="font-dm text-sm truncate" style={{ color: '#FFFFFF' }}>
@@ -217,7 +217,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
             </div>
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
+                <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '11px' }}>
                   {market?.medianSalePrice ? 'Median Sale Price' : listingAverage ? 'Avg Active Listing Price' : 'Average Home Value'}
                 </p>
                 <p
@@ -229,7 +229,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
               </div>
               {budgetLabel && (
                 <div className="text-right shrink-0">
-                  <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '8px' }}>
+                  <p className="font-dm font-medium tracking-widest uppercase text-white/50" style={{ fontSize: '11px' }}>
                     Your Budget
                   </p>
                   <p className="font-dm font-semibold text-sm" style={{ color: '#FFFFFF' }}>
