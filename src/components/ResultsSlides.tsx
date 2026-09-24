@@ -1019,7 +1019,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
               </p>
               <h2
                 className="font-playfair text-white leading-snug mb-4"
-                style={{ fontSize: 'clamp(1.15rem, 4vw, 1.875rem)' }}
+                style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', lineHeight: 1.3 }}
               >
                 Getting pre-qualified is the single fastest way to turn this data into a real purchase. Here's your recommended lender based on your financial status:
               </h2>
