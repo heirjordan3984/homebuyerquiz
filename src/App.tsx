@@ -483,7 +483,8 @@ function App() {
       setResultsView(v);
     }
     const budgetAnswer = answers[6] ?? null;
-    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} budgetAnswer={budgetAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
+    const creditScoreAnswer = answers[12] ?? null;
+    return <><ResultsScreen result={result} placeDetails={placeDetails} addressText={textAnswers[3] ?? null} rentcastData={rentcastData} rentcastLoading={rentcastLoading} onRetake={handleRetake} leadName={leadName} leadEmail={leadEmail} leadPhone={leadPhone} downPaymentAnswer={downPaymentAnswer} budgetAnswer={budgetAnswer} creditScoreAnswer={creditScoreAnswer} view={resultsView} onViewChange={handleResultsViewChange} />{navigator}{dashboardButton}</>;
   }
 
   const currentScreen = screenSequence[currentScreenIndex];

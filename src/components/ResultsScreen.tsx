@@ -18,6 +18,7 @@ interface ResultsScreenProps {
   leadPhone?: string;
   downPaymentAnswer?: number | null;
   budgetAnswer?: number | null;
+  creditScoreAnswer?: number | null;
   view: ResultsView;
   onViewChange: (v: ResultsView) => void;
 }
@@ -34,6 +35,7 @@ export default function ResultsScreen({
   leadPhone,
   downPaymentAnswer,
   budgetAnswer,
+  creditScoreAnswer,
   view,
   onViewChange,
 }: ResultsScreenProps) {
@@ -47,6 +49,7 @@ export default function ResultsScreen({
     leadPhone,
     downPaymentAnswer,
     budgetAnswer,
+    creditScoreAnswer,
     isLoading: rentcastLoading,
     onNext: () => {},
     onRetake: _onRetake,

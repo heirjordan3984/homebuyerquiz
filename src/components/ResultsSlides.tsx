@@ -42,6 +42,7 @@ interface SlideProps {
   leadPhone?: string;
   downPaymentAnswer?: number | null;
   budgetAnswer?: number | null;
+  creditScoreAnswer?: number | null;
   onNext: () => void;
   isLoading?: boolean;
   onRetake?: () => void;
@@ -581,7 +582,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
    SLIDE 2 — Budget & Mortgage: What Can You Actually Afford?
    ============================================================ */
 
-function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPaymentAnswer, budgetAnswer, isLoading, onNext, onRetake }: SlideProps) {
+function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPaymentAnswer, budgetAnswer, creditScoreAnswer, isLoading, onNext, onRetake }: SlideProps) {
   const city = extractCity(placeDetails?.address ?? addressText);
   const market = rentcastData?.market ?? null;
   const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
@@ -594,9 +595,15 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
   const defaultDownPaymentPct = 19;
   const [downPaymentPct, setDownPaymentPct] = useState(defaultDownPaymentPct);
 
-  // Current mortgage rate environment (as of 2026, realistic range)
-  const rateLow = 6.25;
-  const rateHigh = 7.25;
+  // Base 30-year fixed rate, adjusted by credit score tier
+  // Excellent (740+): best rates, Good (670-739): moderate, Fair (580-669): higher
+  const creditTier = creditScoreAnswer ?? 1;
+  const rateAdjustments = [-0.5, 0, 0.75];
+  const baseRateLow = 6.25;
+  const baseRateHigh = 7.25;
+  const adj = rateAdjustments[creditTier] ?? 0;
+  const rateLow = baseRateLow + adj;
+  const rateHigh = baseRateHigh + adj;
   const rateMid = (rateLow + rateHigh) / 2;
 
   // Determine the affordable price range
