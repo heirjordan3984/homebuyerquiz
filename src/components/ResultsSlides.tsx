@@ -1073,22 +1073,85 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
           >
             {isLoading ? 'Building Your Plan…' : `${city ? city + ': ' : ''}Your Complete Buyer Playbook`}
           </h1>
-          {!isLoading && medianPrice && (
+          {!isLoading && (
             <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
-              The median home in {city ?? 'your area'} costs {formatCurrencyShort(medianPrice)}. Getting pre-qualified is the single fastest way to turn this data into a real purchase.
+              The checklist that separates great deals from average ones, plus your next step to get pre-qualified.
             </p>
           )}
         </div>
 
         {!isLoading && (
           <>
+            {/* Area summary recap */}
+            {medianPrice && (
+              <div
+                className="rounded-xl px-5 py-4 mb-6 flex items-center gap-4"
+                style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
+              >
+                <div className="flex-1">
+                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#0D1B2A' }}>
+                    {city ? `${city} Median Sale Price` : 'Area Median Sale Price'}
+                  </p>
+                  <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
+                    {formatCurrency(medianPrice)}
+                  </p>
+                </div>
+                {market?.averageDaysOnMarket != null && (
+                  <div className="text-right">
+                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#0D1B2A' }}>
+                      Avg Days on Market
+                    </p>
+                    <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
+                      {Math.round(market.averageDaysOnMarket)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Top-Buyer Checklist */}
             <TopBuyerChecklist />
 
             {/* Fairway Home Mortgage recommendation */}
             <FairwayMortgageBox city={city} budgetAnswer={budgetAnswer} />
 
-
+            {/* Bottom line */}
+            <div
+              className="rounded-2xl px-6 py-8 sm:p-10 text-center mb-8"
+              style={{ backgroundColor: '#0D1B2A' }}
+            >
+              <p className="font-dm font-medium tracking-widest uppercase mb-3 text-white/40" style={{ fontSize: '9px' }}>
+                The Bottom Line
+              </p>
+              <h2
+                className="font-playfair text-white leading-snug mb-4"
+                style={{ fontSize: 'clamp(1.15rem, 4vw, 1.875rem)' }}
+              >
+                {medianPrice
+                  ? `The median home in ${city ?? 'your area'} costs ${formatCurrencyShort(medianPrice)}. Getting pre-qualified is the single fastest way to turn this data into a real purchase.`
+                  : `Getting pre-qualified is the single fastest way to turn this data into a real purchase.`}
+              </h2>
+              <p
+                className="font-dm text-white/60 leading-relaxed mb-5 text-sm mx-auto"
+                style={{ maxWidth: '440px' }}
+              >
+                You've done the research. You know the market. The buyers who win are the ones who turn knowledge into action — starting with a 10-minute pre-qualification that costs nothing.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
+                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
+                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
+                  <span>10-minute application</span>
+                </div>
+                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
+                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
+                  <span>No cost, no obligation</span>
+                </div>
+                <div className="flex items-center gap-2 font-dm text-xs" style={{ color: 'rgba(201,168,76,0.7)' }}>
+                  <ChevronRight size={12} style={{ color: '#C9A84C' }} />
+                  <span>Strengthens your offer</span>
+                </div>
+              </div>
+            </div>
           </>
         )}
 
