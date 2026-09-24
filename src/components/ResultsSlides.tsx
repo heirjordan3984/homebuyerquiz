@@ -1074,50 +1074,8 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
             {isLoading ? 'Building Your Plan…' : `${city ? city + ': ' : ''}Your Complete Buyer Playbook`}
           </h1>
           {!isLoading && (
-            <p className="font-dm text-sm leading-relaxed text-center" style={{ color: '#6B7280', maxWidth: '480px', margin: '0 auto' }}>
-              The checklist that separates great deals from average ones, plus your next step to get pre-qualified.
-            </p>
-          )}
-        </div>
-
-        {!isLoading && (
-          <>
-            {/* Area summary recap */}
-            {medianPrice && (
-              <div
-                className="rounded-xl px-5 py-4 mb-6 flex items-center gap-4"
-                style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}
-              >
-                <div className="flex-1">
-                  <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#0D1B2A' }}>
-                    {city ? `${city} Median Sale Price` : 'Area Median Sale Price'}
-                  </p>
-                  <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
-                    {formatCurrency(medianPrice)}
-                  </p>
-                </div>
-                {market?.averageDaysOnMarket != null && (
-                  <div className="text-right">
-                    <p className="font-dm font-medium tracking-widest uppercase mb-0.5" style={{ fontSize: '11px', color: '#0D1B2A' }}>
-                      Avg Days on Market
-                    </p>
-                    <p className="font-playfair font-semibold" style={{ fontSize: '20px', color: '#0D1B2A' }}>
-                      {Math.round(market.averageDaysOnMarket)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Top-Buyer Checklist */}
-            <TopBuyerChecklist />
-
-            {/* Fairway Home Mortgage recommendation */}
-            <FairwayMortgageBox city={city} budgetAnswer={budgetAnswer} />
-
-            {/* Bottom line */}
             <div
-              className="rounded-2xl px-6 py-8 sm:p-10 text-center mb-8"
+              className="rounded-2xl px-6 py-8 sm:p-10 text-center mb-8 mt-6"
               style={{ backgroundColor: '#0D1B2A' }}
             >
               <p className="font-dm font-medium tracking-widest uppercase mb-3 text-white/40" style={{ fontSize: '9px' }}>
@@ -1152,6 +1110,18 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
                 </div>
               </div>
             </div>
+          )}
+        </div>
+
+        {!isLoading && (
+          <>
+            {/* Top-Buyer Checklist */}
+            <TopBuyerChecklist />
+
+            {/* Fairway Home Mortgage recommendation */}
+            <FairwayMortgageBox city={city} budgetAnswer={budgetAnswer} />
+
+
           </>
         )}
 
