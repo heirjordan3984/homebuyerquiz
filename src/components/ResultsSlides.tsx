@@ -1005,6 +1005,18 @@ function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadNa
           </>
         )}
 
+        {onRetake && (
+          <button
+            onClick={onRetake}
+            className="w-full font-dm font-medium py-3 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 mt-4"
+            style={{ backgroundColor: 'transparent', color: '#5A6573', border: '1px solid #E0DAD0' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F9F7F2'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+          >
+            Start Over
+          </button>
+        )}
+
       </div>
     </div>
   );
