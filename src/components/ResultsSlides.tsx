@@ -1021,9 +1021,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
                 className="font-playfair text-white leading-snug mb-4"
                 style={{ fontSize: 'clamp(1.15rem, 4vw, 1.875rem)' }}
               >
-                {medianPrice
-                  ? `The median home in ${city ?? 'your area'} costs ${formatCurrencyShort(medianPrice)}. Getting pre-qualified is the single fastest way to turn this data into a real purchase.`
-                  : `Getting pre-qualified is the single fastest way to turn this data into a real purchase.`}
+                Getting pre-qualified is the single fastest way to turn this data into a real purchase.
               </h2>
               <p
                 className="font-dm text-white/60 leading-relaxed mb-5 text-sm mx-auto"
