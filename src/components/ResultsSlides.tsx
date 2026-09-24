@@ -424,21 +424,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
   const resolvedAvgDays = avgDays ?? avgDaysFromListings;
 
-  // Derive new listings count from listedDate when market history doesn't provide it
-  const newListingsFromListings = (() => {
-    if (!nearbyListings || nearbyListings.length === 0) return null;
-    const now = Date.now();
-    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
-    return nearbyListings.filter((l) => {
-      if (!l.listedDate) return false;
-      return new Date(l.listedDate).getTime() >= thirtyDaysAgo;
-    }).length;
-  })();
-
-  // New listings last month (from most recent history entry, or derived from listings)
   const history = market?.history ?? [];
-  const lastEntry = history.length > 0 ? history[history.length - 1] : null;
-  const newListingsLastMonth = lastEntry?.newListings ?? market?.newListings ?? newListingsFromListings;
 
   const last6Months = history.slice(-6);
   const prev6Months = history.slice(-12, -6);
@@ -589,7 +575,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
             </div>
 
             {/* Live market data for the user's city */}
-            {(medianSale || resolvedAvgDays != null || saleListRatio || pricePerSqft || homesInBudget != null || newListingsLastMonth != null) && (
+            {(medianSale || resolvedAvgDays != null || saleListRatio || pricePerSqft || homesInBudget != null) && (
               <div className="mb-6">
                 <div
                   className="rounded-2xl overflow-hidden"
@@ -621,15 +607,13 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
                     </div>
 
                     {/* Inventory stats row */}
-                    {(homesInBudget != null || newListingsLastMonth != null) && (
+                    {homesInBudget != null && (
                       <div className="mt-3 pt-4" style={{ borderTop: '1px solid #E8E0C8' }}>
                         <div className="grid grid-cols-2 gap-3">
                           {homesInBudget != null && (
                             <StatBox label="Homes in Your Budget" value={String(homesInBudget)} subLabel="active listings nearby" accent="gold" />
                           )}
-                          {newListingsLastMonth != null && (
-                            <StatBox label="New Listings" value={newListingsLastMonth.toLocaleString()} subLabel="last month" />
-                          )}
+                          <StatBox label="Monthly Buyer-Intent Searches" value="36,500" subLabel="organic search volume" accent="gold" />
                         </div>
                       </div>
                     )}
