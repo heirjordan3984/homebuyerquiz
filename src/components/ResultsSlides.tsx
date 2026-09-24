@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  TrendingUp, DollarSign, BarChart3, MapPin, Clock,
+  TrendingUp, DollarSign, MapPin, Clock,
   ArrowRight, Zap, Star, CheckCircle, ChevronRight,
   Home, Calculator, Percent, Wallet, ShieldCheck, Building2,
 } from 'lucide-react';
@@ -248,34 +248,23 @@ function TopBuyerChecklist() {
   );
 }
 
-/* ---------- Buyer Search Interest Table ---------- */
+/* ---------- Homes in Your Price Range Grid ---------- */
 
-function BuyerSearchInterestTable({ city }: { city: string | null }) {
-  const location = city ?? 'your area';
+const HOME_THUMBNAILS = [
+  'https://images.pexels.com/photos/30580640/pexels-photo-30580640.jpeg?auto=compress&cs=tinysrgb&h=400&w=600',
+  'https://images.pexels.com/photos/8583638/pexels-photo-8583638.jpeg?auto=compress&cs=tinysrgb&h=400&w=600',
+  'https://images.pexels.com/photos/33350023/pexels-photo-33350023.jpeg?auto=compress&cs=tinysrgb&h=400&w=600',
+  'https://images.pexels.com/photos/186077/pexels-photo-186077.jpeg?auto=compress&cs=tinysrgb&h=400&w=600',
+  'https://images.pexels.com/photos/4832530/pexels-photo-4832530.jpeg?auto=compress&cs=tinysrgb&h=400&w=600',
+  'https://images.pexels.com/photos/7710011/pexels-photo-7710011.jpeg?auto=compress&cs=tinysrgb&h=400&w=600',
+];
 
-  const keywords = [
-    { term: `homes for sale in ${location}`, volume: 9400, trend: '+18%' },
-    { term: `buy a house in ${location}`, volume: 6200, trend: '+23%' },
-    { term: `${location} real estate listings`, volume: 5800, trend: '+11%' },
-    { term: `houses for sale ${location}`, volume: 4900, trend: '+15%' },
-    { term: `${location} home values`, volume: 3700, trend: '+29%' },
-    { term: `best neighborhoods in ${location}`, volume: 2800, trend: '+7%' },
-    { term: `move to ${location}`, volume: 2100, trend: '+34%' },
-    { term: `${location} housing market 2025`, volume: 1600, trend: '+41%' },
-  ];
-
-  const maxVolume = keywords[0].volume;
-
-  const difficultyColor = (i: number) => {
-    if (i < 2) return '#E53E3E';
-    if (i < 4) return '#DD6B20';
-    return '#C9A84C';
-  };
-  const difficultyLabel = (i: number) => {
-    if (i < 2) return 'High';
-    if (i < 4) return 'Med';
-    return 'Low';
-  };
+function HomesInBudgetGrid({ city, listings }: {
+  city: string | null;
+  listings: { id: string; formattedAddress: string; price: number; bedrooms?: number; bathrooms?: number; squareFootage?: number }[] | null;
+}) {
+  const location = city ?? 'Your Area';
+  const top6 = (listings ?? []).slice(0, 6);
 
   return (
     <div
@@ -287,81 +276,82 @@ function BuyerSearchInterestTable({ city }: { city: string | null }) {
         style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
       >
         <div className="flex items-center gap-2.5">
-          <BarChart3 size={13} style={{ color: '#C9A84C' }} />
+          <Home size={13} style={{ color: '#C9A84C' }} />
           <span className="font-dm font-medium tracking-widest uppercase text-white/70" style={{ fontSize: '12.5px' }}>
-            Keyword Search Volume: Buyer Intent
+            Homes in {location} in Your Price Range
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#4ADE80' }} />
-          <span className="font-dm text-white/50 text-xs">Live Data</span>
+          <span className="font-dm text-white/50 text-xs">Live Listings</span>
         </div>
       </div>
 
-      <div className="px-5 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-4">
-          <p className="font-dm text-sm font-semibold" style={{ color: '#0D1B2A' }}>
-            Monthly buyer-intent searches
-          </p>
-          <span
-            className="font-dm font-semibold text-xs px-3 py-1 rounded-full"
-            style={{ backgroundColor: 'rgba(74,222,128,0.12)', color: '#16A34A', border: '1px solid rgba(74,222,128,0.25)' }}
-          >
-            {keywords.reduce((s, k) => s + k.volume, 0).toLocaleString()} / mo
-          </span>
-        </div>
-
-        <div className="space-y-4 mb-4">
-          {keywords.map((kw, i) => (
-            <div key={i}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span
-                  className="font-dm text-sm truncate pr-3"
-                  style={{ color: '#1F2937', maxWidth: '58%' }}
+      <div className="px-5 pt-4 pb-3">
+        <div className="grid grid-cols-2 gap-3">
+          {top6.map((home, i) => (
+            <div
+              key={home.id}
+              className="rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.03]"
+              style={{ border: '1px solid #E8E0C8', backgroundColor: '#FFFFFF' }}
+            >
+              <div className="relative overflow-hidden" style={{ aspectRatio: '3 / 2' }}>
+                <img
+                  src={HOME_THUMBNAILS[i % HOME_THUMBNAILS.length]}
+                  alt="Home listing"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+                <div
+                  className="absolute bottom-0 left-0 right-0 px-2.5 py-1.5"
+                  style={{ background: 'linear-gradient(to top, rgba(13,27,42,0.85), transparent)' }}
                 >
-                  {kw.term}
-                </span>
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <span
-                    className="font-dm font-medium text-xs px-2 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${difficultyColor(i)}18`,
-                      color: difficultyColor(i),
-                    }}
-                  >
-                    {difficultyLabel(i)} KD
-                  </span>
-                  <span className="font-dm font-semibold text-xs" style={{ color: '#16A34A' }}>
-                    {kw.trend}
-                  </span>
-                  <span className="font-dm font-semibold text-sm" style={{ color: '#0D1B2A', minWidth: '48px', textAlign: 'right' }}>
-                    {kw.volume.toLocaleString()}
+                  <span className="font-playfair font-bold text-white" style={{ fontSize: '16px' }}>
+                    {formatCurrencyShort(home.price)}
                   </span>
                 </div>
               </div>
-              <div className="rounded-full overflow-hidden" style={{ height: '6px', backgroundColor: '#EDE6D6' }}>
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${Math.round((kw.volume / maxVolume) * 100)}%`,
-                    background: i === 0
-                      ? 'linear-gradient(to right, #C9A84C, #E6C96A)'
-                      : i < 3
-                      ? 'linear-gradient(to right, #2D6A4F, #4A9E6A)'
-                      : '#9CA3AF',
-                  }}
-                />
+              <div className="px-2.5 py-2">
+                <p className="font-dm truncate" style={{ fontSize: '10.5px', color: '#6B7280', lineHeight: 1.3 }}>
+                  {home.formattedAddress}
+                </p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  {home.bedrooms != null && (
+                    <span className="font-dm" style={{ fontSize: '10px', color: '#0D1B2A' }}>
+                      {home.bedrooms} bd
+                    </span>
+                  )}
+                  {home.bathrooms != null && (
+                    <span className="font-dm" style={{ fontSize: '10px', color: '#0D1B2A' }}>
+                      {home.bathrooms} ba
+                    </span>
+                  )}
+                  {home.squareFootage != null && (
+                    <span className="font-dm" style={{ fontSize: '10px', color: '#6B7280' }}>
+                      {home.squareFootage.toLocaleString()} sqft
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex items-center justify-between pb-3 pt-2" style={{ borderTop: '1px solid #EDE6D6' }}>
+        {top6.length === 0 && (
+          <div className="text-center py-8">
+            <Home size={28} style={{ color: '#C9A84C', margin: '0 auto 8px' }} />
+            <p className="font-dm" style={{ fontSize: '13px', color: '#6B7280' }}>
+              No active listings found in your price range right now.
+            </p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pb-1 pt-3 mt-1" style={{ borderTop: '1px solid #EDE6D6' }}>
           <span className="font-dm text-xs" style={{ color: '#9CA3AF' }}>
-            Source: Organic search volume estimates, buyer intent keywords
+            Active listings in your budget range
           </span>
           <span className="font-dm font-medium text-xs" style={{ color: '#C9A84C' }}>
-            Updated monthly
+            Updated daily
           </span>
         </div>
       </div>
@@ -622,9 +612,9 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
               </div>
             )}
 
-            {/* Buyer search interest */}
+            {/* Homes in your price range */}
             <div className="mb-6">
-              <BuyerSearchInterestTable city={city} />
+              <HomesInBudgetGrid city={city} listings={nearbyListings} />
             </div>
 
             <div
