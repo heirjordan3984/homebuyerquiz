@@ -696,9 +696,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
   const userBudgetLabel = budgetAnswer != null ? BUDGET_LABELS[budgetAnswer] : null;
 
   // Down payment
-  const dpIdx = downPaymentAnswer ?? 1;
-  const dpMultiplier = DOWN_PAYMENT_MULTIPLIERS[dpIdx] ?? 0.32;
-  const defaultDownPaymentPct = Math.round(dpMultiplier * 100);
+  const defaultDownPaymentPct = 19;
   const [downPaymentPct, setDownPaymentPct] = useState(defaultDownPaymentPct);
 
   // Current mortgage rate environment (as of 2026, realistic range)
