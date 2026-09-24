@@ -959,7 +959,7 @@ function PaymentRow({ label, rate, payment, highlight }: { label: string; rate: 
       <p className="font-dm" style={{ fontSize: '11.5px', color: labelColor }}>{label}</p>
       <p className="font-dm font-medium text-center" style={{ fontSize: '12px', color: '#6B7280' }}>{rate.toFixed(2)}%</p>
       <p className="font-playfair font-semibold text-right" style={{ fontSize: '15px', color: paymentColor }}>
-        {formatCurrencyShort(payment)}/mo
+        {formatCurrency(payment)}/mo
       </p>
     </div>
   );
