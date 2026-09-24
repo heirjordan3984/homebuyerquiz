@@ -63,7 +63,7 @@ function extractCityState(address: string | null | undefined): string | null {
 
 function calcMonthlyPayment(principal: number, annualRate: number, years: number): number {
   if (annualRate <= 0) return principal / (years * 12);
-  const monthlyRate = annualRate / 12;
+  const monthlyRate = annualRate / 100 / 12;
   const numPayments = years * 12;
   return (principal * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
 }
@@ -75,7 +75,7 @@ function calcAffordablePrice(
   years = 30,
 ): number {
   if (annualRate <= 0) return (monthlyPayment * years * 12) / (1 - downPaymentPct);
-  const monthlyRate = annualRate / 12;
+  const monthlyRate = annualRate / 100 / 12;
   const numPayments = years * 12;
   const loanFactor = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
   const maxLoan = monthlyPayment / loanFactor;
