@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   TrendingUp, DollarSign, MapPin, Clock,
-  ArrowRight, Zap, Star, CheckCircle, ChevronRight,
+  ArrowRight, Zap,
   Home, Calculator, Percent, Wallet, ShieldCheck, Building2,
 } from 'lucide-react';
 import type { QuizResult } from '../utils/quizLogic';
@@ -171,77 +171,6 @@ function FairwayMortgageBox({ city, budgetAnswer }: { city: string | null; budge
         </a>
         <p className="font-dm text-center mt-2" style={{ fontSize: '10px', color: '#9CA3AF' }}>
           Soft recommendation — you're free to use any lender.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- Top-Buyer Checklist ---------- */
-
-function TopBuyerChecklist() {
-  const items: { title: string; detail: string }[] = [
-    { title: 'Get pre-approved before you tour', detail: 'Sellers take pre-approved offers more seriously. Know your number first.' },
-    { title: 'Research the neighborhood', detail: 'Schools, commute, crime, and future development all affect value.' },
-    { title: 'Tour homes the day they list', detail: 'The best deals go under contract within 48 hours of hitting the market.' },
-    { title: 'Never skip the home inspection', detail: 'A $400 inspection can save you $15,000 in surprise repairs.' },
-    { title: 'Understand closing costs upfront', detail: 'Budget 2-5% of the purchase price for closing, not just the down payment.' },
-    { title: 'Make a competitive, clean offer', detail: 'Fewer contingencies and a strong earnest money deposit win in multiple-offer situations.' },
-    { title: 'Negotiate repairs, not just price', detail: 'Seller credits for repairs can save you more cash than a price reduction.' },
-    { title: 'Check comparable sales yourself', detail: 'Know what similar homes recently sold for before you decide what to offer.' },
-    { title: 'Choose the right buyer\'s agent', detail: 'Top agents negotiate 3-7% off asking price, far beyond their commission cost.' },
-    { title: 'Time your offer strategically', detail: 'Homes listed Thursday or Friday get the most weekend competition. Act fast.' },
-  ];
-
-  return (
-    <div
-      className="rounded-2xl overflow-hidden mb-6"
-      style={{ border: '1.5px solid #E8E0C8', backgroundColor: '#FDFAF4' }}
-    >
-      <div
-        className="px-5 py-3 flex items-center gap-2"
-        style={{ backgroundColor: '#0D1B2A', borderBottom: '1px solid rgba(201,168,76,0.2)' }}
-      >
-        <Star size={12} style={{ color: '#C9A84C' }} />
-        <p className="font-dm font-medium tracking-widest uppercase text-white/60" style={{ fontSize: '12.5px' }}>
-          The Top-Buyer Checklist
-        </p>
-      </div>
-
-      <div className="px-5 pt-4 pb-2">
-        <p className="font-dm leading-relaxed mb-4" style={{ fontSize: '15px', color: '#6B7280' }}>
-          What separates buyers who get a great deal from the rest.
-        </p>
-
-        <ul className="space-y-2.5 mb-4">
-          {items.map((item, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <div
-                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                style={{ backgroundColor: 'rgba(45,106,79,0.12)', border: '1px solid rgba(45,106,79,0.25)' }}
-              >
-                <CheckCircle size={11} style={{ color: '#2D6A4F' }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-dm font-semibold" style={{ fontSize: '14px', color: '#0D1B2A', lineHeight: 1.35 }}>
-                  {item.title}
-                </p>
-                <p className="font-dm" style={{ fontSize: '12.5px', color: '#6B7280', lineHeight: 1.4 }}>
-                  {item.detail}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div
-        className="px-5 py-3 flex items-start gap-2.5"
-        style={{ backgroundColor: 'rgba(201,168,76,0.10)', borderTop: '1px solid rgba(201,168,76,0.25)' }}
-      >
-        <Zap size={13} style={{ color: '#C9A84C', flexShrink: 0, marginTop: '2px' }} />
-        <p className="font-dm" style={{ fontSize: '13px', color: '#0D1B2A', lineHeight: 1.45 }}>
-          <strong>The right team does all of this for you.</strong> One decision unlocks every item on this list, and the strongest possible purchase price.
         </p>
       </div>
     </div>
@@ -1101,9 +1030,6 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
 
         {!isLoading && (
           <>
-            {/* Top-Buyer Checklist */}
-            <TopBuyerChecklist />
-
             {/* Fairway Home Mortgage recommendation */}
             <FairwayMortgageBox city={city} budgetAnswer={budgetAnswer} />
 
