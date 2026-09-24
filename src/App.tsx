@@ -410,12 +410,26 @@ function App() {
     }
   }
 
-  const navigator = null;
-  void DevNavigator;
-  void screenLabels;
-  void handleDevJump;
-
   const isDev = import.meta.env.DEV;
+
+  const resultsSlideLabels: { view: ResultsView; label: string }[] = [
+    { view: 'slide1', label: 'Results — Slide 1' },
+    { view: 'slide2', label: 'Results — Slide 2' },
+    { view: 'slide3', label: 'Results — Slide 3' },
+    { view: 'full', label: 'Results — Full Analysis' },
+  ];
+
+  const navigator = isDev ? (
+    <DevNavigator
+      phase={phase}
+      currentScreenIndex={currentScreenIndex}
+      screenLabels={screenLabels}
+      resultsView={resultsView}
+      resultsSlideLabels={resultsSlideLabels}
+      onJumpTo={handleDevJump}
+    />
+  ) : null;
+
   const dashboardButton = isDev ? (
     <a
       href="#admin"
