@@ -48,6 +48,7 @@ export default function ResultsScreen({
     downPaymentAnswer,
     isLoading: rentcastLoading,
     onNext: () => {},
+    onRetake: _onRetake,
   };
 
   if (view === 'full') {
@@ -60,6 +61,7 @@ export default function ResultsScreen({
         rentcastLoading={rentcastLoading}
         budgetAnswer={budgetAnswer}
         onNext={() => onViewChange('slide1')}
+        onRetake={_onRetake}
       />
     );
   }

@@ -33,6 +33,7 @@ interface SlideProps {
   downPaymentAnswer?: number | null;
   onNext: () => void;
   isLoading?: boolean;
+  onRetake?: () => void;
 }
 
 
@@ -471,7 +472,7 @@ function BuyerSearchInterestTable({ city }: { city: string | null }) {
   );
 }
 
-function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNext, isLoading }: SlideProps) {
+function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNext, isLoading, onRetake }: SlideProps) {
   const address = placeDetails?.address ?? addressText ?? 'Your Market';
   const cityState = address.replace(/, USA$/, '').trim() || address;
   const city = address.split(',')[0]?.trim() || null;
@@ -719,12 +720,23 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
           See Your Savings Potential
           <ArrowRight size={15} />
         </button>
+        {onRetake && (
+          <button
+            onClick={onRetake}
+            className="w-full font-dm font-medium py-3 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 mt-3"
+            style={{ backgroundColor: 'transparent', color: '#5A6573', border: '1px solid #E0DAD0' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F9F7F2'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+          >
+            Start Over
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadName, downPaymentAnswer, isLoading }: SlideProps) {
+function Slide2ProfitPotential({ placeDetails, addressText, rentcastData, leadName, downPaymentAnswer, isLoading, onRetake }: SlideProps) {
   void leadName;
   const address = placeDetails?.address ?? addressText ?? null;
   const market = rentcastData?.market ?? null;
@@ -1130,6 +1142,18 @@ function Slide3BookCall({ result, rentcastData, leadName, downPaymentAnswer }: S
             </div>
           </div>
         </div>
+
+        {onRetake && (
+          <button
+            onClick={onRetake}
+            className="w-full font-dm font-medium py-3 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 mb-8"
+            style={{ backgroundColor: 'transparent', color: '#5A6573', border: '1px solid #E0DAD0' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F9F7F2'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+          >
+            Start Over
+          </button>
+        )}
 
       </div>
     </div>

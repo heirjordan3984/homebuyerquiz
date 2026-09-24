@@ -75,6 +75,7 @@ interface Props {
   rentcastLoading?: boolean;
   budgetAnswer?: number | null;
   onNext?: () => void;
+  onRetake?: () => void;
 }
 
 function formatCurrency(value: number): string {
@@ -104,7 +105,7 @@ const BUDGET_RANGES: [number, number | null][] = [
 
 const BUDGET_LABELS = ['Under $250K', '$250K–$450K', '$450K–$700K', '$700K–$1M', '$1M+'];
 
-export default function ResultsFullAnalysis({ result, placeDetails, addressText, rentcastData, rentcastLoading, budgetAnswer, onNext }: Props) {
+export default function ResultsFullAnalysis({ result, placeDetails, addressText, rentcastData, rentcastLoading, budgetAnswer, onNext, onRetake }: Props) {
   void result;
   const nearbyListings = rentcastData?.nearbyListings ?? null;
   const market = rentcastData?.market ?? null;
@@ -423,16 +424,29 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
         )}
 
         {onNext && (
-          <button
-            onClick={onNext}
-            className="w-full font-dm font-medium py-4 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 mt-6"
-            style={{ backgroundColor: '#C9A84C', color: '#0D1B2A' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D4B86A'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A84C'; }}
-          >
-            Continue to Market Report
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </button>
+          <div className="space-y-3 mt-6">
+            <button
+              onClick={onNext}
+              className="w-full font-dm font-medium py-4 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+              style={{ backgroundColor: '#C9A84C', color: '#0D1B2A' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D4B86A'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#C9A84C'; }}
+            >
+              Continue to Market Report
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+            {onRetake && (
+              <button
+                onClick={onRetake}
+                className="w-full font-dm font-medium py-3 rounded-full text-sm transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                style={{ backgroundColor: 'transparent', color: '#5A6573', border: '1px solid #E0DAD0' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F9F7F2'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+              >
+                Start Over
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
