@@ -407,7 +407,15 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
   const medianSale = market?.medianSalePrice ? formatCurrencyShort(market.medianSalePrice) : null;
   const pricePerSqft = market?.averagePricePerSquareFoot ? `${Math.round(market.averagePricePerSquareFoot)}` : null;
 
+  // Homes for sale in the user's budget (from nearby listings already filtered by price range)
+  const nearbyListings = rentcastData?.nearbyListings ?? null;
+  const homesInBudget = nearbyListings ? nearbyListings.length : null;
+
+  // New listings last month (from most recent history entry)
   const history = market?.history ?? [];
+  const lastEntry = history.length > 0 ? history[history.length - 1] : null;
+  const newListingsLastMonth = lastEntry?.newListings ?? market?.newListings ?? null;
+
   const last6Months = history.slice(-6);
   const prev6Months = history.slice(-12, -6);
   const priceTrend = (() => {
@@ -557,7 +565,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
             </div>
 
             {/* Live market data for the user's city */}
-            {(medianSale || avgDays != null || saleListRatio || pricePerSqft) && (
+            {(medianSale || avgDays != null || saleListRatio || pricePerSqft || homesInBudget != null || newListingsLastMonth != null) && (
               <div className="mb-6">
                 <div
                   className="rounded-2xl overflow-hidden"
@@ -580,12 +588,27 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
                     )}
                   </div>
                   <div className="px-5 py-5">
+                    {/* Primary stats row */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {medianSale && <StatBox label="Median Sale" value={medianSale} />}
-                      {avgDays != null && <StatBox label="Avg Days Listed" value={String(avgDays)} />}
+                      {avgDays != null && <StatBox label="Avg Days on Market" value={String(avgDays)} subLabel="avg time to contract" />}
                       {saleListRatio && <StatBox label="Sale/List Ratio" value={`${saleListRatio}%`} valueColor="#2D6A4F" />}
                       {pricePerSqft && <StatBox label="Price / Sq Ft" value={pricePerSqft} />}
                     </div>
+
+                    {/* Inventory stats row */}
+                    {(homesInBudget != null || newListingsLastMonth != null) && (
+                      <div className="mt-3 pt-4" style={{ borderTop: '1px solid #E8E0C8' }}>
+                        <div className="grid grid-cols-2 gap-3">
+                          {homesInBudget != null && (
+                            <StatBox label="Homes in Your Budget" value={String(homesInBudget)} subLabel="active listings nearby" accent="gold" />
+                          )}
+                          {newListingsLastMonth != null && (
+                            <StatBox label="New Listings" value={newListingsLastMonth.toLocaleString()} subLabel="last month" />
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
