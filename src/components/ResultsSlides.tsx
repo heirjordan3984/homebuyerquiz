@@ -1000,7 +1000,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
             className="font-playfair leading-tight text-center mb-3"
             style={{ fontSize: 'clamp(1.75rem, 6vw, 3rem)', color: '#0D1B2A' }}
           >
-            {isLoading ? 'Building Your Plan…' : `${city ? city + ': ' : ''}Your Complete Buyer Playbook`}
+            {isLoading ? 'Building Your Plan…' : 'Your Next Step'}
           </h1>
           {!isLoading && (
             <div
