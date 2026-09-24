@@ -897,7 +897,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
               <div className="px-5 py-5">
                 <div className="flex items-center gap-2.5 mb-3">
                   <Calculator size={14} style={{ color: '#C9A84C' }} />
-                  <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '10px', color: 'rgba(201,168,76,0.8)' }}>
+                  <span className="font-dm font-medium tracking-widest uppercase" style={{ fontSize: '14px', color: 'rgba(201,168,76,0.9)' }}>
                     28% Rule: Max Affordable Payment
                   </span>
                 </div>
