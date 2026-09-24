@@ -1023,12 +1023,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
               >
                 Getting pre-qualified is the single fastest way to turn this data into a real purchase. Here's your recommended lender based on your financial status:
               </h2>
-              <p
-                className="font-dm text-white/60 leading-relaxed mb-5 text-sm mx-auto"
-                style={{ maxWidth: '440px' }}
-              >
-                You've done the research. You know the market. The buyers who win are the ones who turn knowledge into action.
-              </p>
+
             </div>
           )}
         </div>
