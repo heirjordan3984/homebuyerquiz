@@ -40,7 +40,7 @@ export const questions: Question[] = [
     id: 3,
     topic: "Target Area",
     type: 'text',
-    question: "What city or area in {state} are you looking to buy in?",
+    question: "What city or area are you looking to buy in?",
     placeholder: "Enter a city or area...",
     options: [],
   },
