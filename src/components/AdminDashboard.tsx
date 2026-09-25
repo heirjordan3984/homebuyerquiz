@@ -79,6 +79,26 @@ export default function AdminDashboard() {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const params = new URLSearchParams();
+
+      // Convert a "YYYY-MM-DD" date picker value to a UTC ISO string
+      // representing midnight (start or end-of-day) in Denver time.
+      function denverBoundary(dateStr: string, endOfDay: boolean): string {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        // Determine Denver's UTC offset for this date by checking noon UTC
+        const noonUTC = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+        const denverHour = parseInt(
+          new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/Denver', hour: '2-digit', hour12: false,
+          }).format(noonUTC),
+        );
+        const offsetHours = 12 - denverHour; // 6 for MDT, 7 for MST
+        const midnightUTC = Date.UTC(y, m - 1, d, offsetHours, 0, 0, 0);
+        const boundary = endOfDay
+          ? midnightUTC + 24 * 3600 * 1000
+          : midnightUTC;
+        return new Date(boundary).toISOString();
+      }
+
       if (dateRange === '7d') {
         const d = new Date(); d.setDate(d.getDate() - 7);
         params.set('start', d.toISOString());
@@ -89,12 +109,8 @@ export default function AdminDashboard() {
         const d = new Date(); d.setDate(d.getDate() - 90);
         params.set('start', d.toISOString());
       } else if (dateRange === 'custom') {
-        if (customStart) params.set('start', new Date(customStart).toISOString());
-        if (customEnd) {
-          const end = new Date(customEnd);
-          end.setHours(23, 59, 59, 999);
-          params.set('end', end.toISOString());
-        }
+        if (customStart) params.set('start', denverBoundary(customStart, false));
+        if (customEnd) params.set('end', denverBoundary(customEnd, true));
       }
       const url = `${supabaseUrl}/functions/v1/quiz-analytics${params.toString() ? `?${params.toString()}` : ''}`;
       const res = await fetch(url, {
