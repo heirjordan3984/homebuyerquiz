@@ -60,7 +60,7 @@ interface AnalyticsData {
   };
 }
 
-type DateRange = 'all' | '7d' | '30d' | '90d' | 'custom';
+type DateRange = 'all' | 'today' | '7d' | '30d' | '90d' | 'custom';
 
 export default function AdminDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -99,7 +99,11 @@ export default function AdminDashboard() {
         return new Date(boundary).toISOString();
       }
 
-      if (dateRange === '7d') {
+      if (dateRange === 'today') {
+        const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Denver' });
+        params.set('start', denverBoundary(todayStr, false));
+        params.set('end', denverBoundary(todayStr, true));
+      } else if (dateRange === '7d') {
         const d = new Date(); d.setDate(d.getDate() - 7);
         params.set('start', d.toISOString());
       } else if (dateRange === '30d') {
@@ -198,7 +202,7 @@ export default function AdminDashboard() {
             <Calendar size={15} />
             <span>Date range:</span>
           </div>
-          {(['all', '7d', '30d', '90d', 'custom'] as DateRange[]).map((range) => (
+          {(['all', 'today', '7d', '30d', '90d', 'custom'] as DateRange[]).map((range) => (
             <button
               key={range}
               onClick={() => setDateRange(range)}
@@ -209,7 +213,7 @@ export default function AdminDashboard() {
                 border: `1px solid ${dateRange === range ? '#0D1B2A' : '#E0DAD0'}`,
               }}
             >
-              {range === 'all' ? 'All time' : range === '7d' ? 'Last 7 days' : range === '30d' ? 'Last 30 days' : range === '90d' ? 'Last 90 days' : 'Custom'}
+              {range === 'all' ? 'All time' : range === 'today' ? 'Today' : range === '7d' ? 'Last 7 days' : range === '30d' ? 'Last 30 days' : range === '90d' ? 'Last 90 days' : 'Custom'}
             </button>
           ))}
           {dateRange === 'custom' && (
