@@ -80,6 +80,25 @@ export default function AdminDashboard() {
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       const params = new URLSearchParams();
 
+      function denverDateString(date: Date): string {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'America/Denver',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).formatToParts(date);
+        const year = parts.find((part) => part.type === 'year')?.value;
+        const month = parts.find((part) => part.type === 'month')?.value;
+        const day = parts.find((part) => part.type === 'day')?.value;
+        return `${year}-${month}-${day}`;
+      }
+
+      function shiftDate(dateStr: string, days: number): string {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const shifted = new Date(Date.UTC(year, month - 1, day + days));
+        return shifted.toISOString().slice(0, 10);
+      }
+
       // Convert a "YYYY-MM-DD" date picker value to a UTC ISO string
       // representing midnight (start or end-of-day) in Denver time.
       function denverBoundary(dateStr: string, endOfDay: boolean): string {
@@ -99,19 +118,19 @@ export default function AdminDashboard() {
         return new Date(boundary).toISOString();
       }
 
+      const todayStr = denverDateString(new Date());
       if (dateRange === 'today') {
-        const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Denver' });
         params.set('start', denverBoundary(todayStr, false));
         params.set('end', denverBoundary(todayStr, true));
       } else if (dateRange === '7d') {
-        const d = new Date(); d.setDate(d.getDate() - 7);
-        params.set('start', d.toISOString());
+        params.set('start', denverBoundary(shiftDate(todayStr, -6), false));
+        params.set('end', denverBoundary(todayStr, true));
       } else if (dateRange === '30d') {
-        const d = new Date(); d.setDate(d.getDate() - 30);
-        params.set('start', d.toISOString());
+        params.set('start', denverBoundary(shiftDate(todayStr, -29), false));
+        params.set('end', denverBoundary(todayStr, true));
       } else if (dateRange === '90d') {
-        const d = new Date(); d.setDate(d.getDate() - 90);
-        params.set('start', d.toISOString());
+        params.set('start', denverBoundary(shiftDate(todayStr, -89), false));
+        params.set('end', denverBoundary(todayStr, true));
       } else if (dateRange === 'custom') {
         if (customStart) params.set('start', denverBoundary(customStart, false));
         if (customEnd) params.set('end', denverBoundary(customEnd, true));
