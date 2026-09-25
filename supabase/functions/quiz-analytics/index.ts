@@ -84,8 +84,8 @@ Deno.serve(async (req: Request) => {
       sessionsQuery = sessionsQuery.gte("created_at", startDate);
     }
     if (endDate) {
-      leadsQuery = leadsQuery.lte("created_at", endDate);
-      sessionsQuery = sessionsQuery.lte("created_at", endDate);
+      leadsQuery = leadsQuery.lt("created_at", endDate);
+      sessionsQuery = sessionsQuery.lt("created_at", endDate);
     }
 
     const [leadsResult, sessionsResult] = await Promise.all([
@@ -180,12 +180,16 @@ Deno.serve(async (req: Request) => {
     const dailyTrend = new Map<string, { date: string; starts: number; completions: number }>();
 
     function mstDate(iso: string): string {
-      const d = new Date(iso);
-      const mst = new Date(d.toLocaleString("en-US", { timeZone: "America/Denver" }));
-      const y = mst.getFullYear();
-      const m = String(mst.getMonth() + 1).padStart(2, "0");
-      const day = String(mst.getDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`;
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(new Date(iso));
+      const year = parts.find((part) => part.type === "year")?.value;
+      const month = parts.find((part) => part.type === "month")?.value;
+      const day = parts.find((part) => part.type === "day")?.value;
+      return `${year}-${month}-${day}`;
     }
 
     for (const s of sessions) {
