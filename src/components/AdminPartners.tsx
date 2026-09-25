@@ -240,7 +240,7 @@ export default function AdminPartners() {
                 return (
                   <tr key={a.id} className="border-t" style={{ borderColor: '#F0EDE8' }}>
                     <td className="px-4 py-2" style={{ color: '#0D1B2A' }}>
-                      {new Date(a.created_at).toLocaleString()}
+                      {new Date(a.created_at).toLocaleString('en-US', { timeZone: 'America/Denver' })}
                     </td>
                     <td className="px-4 py-2" style={{ color: '#0D1B2A' }}>
                       {client?.name || '(deleted)'}
@@ -338,7 +338,7 @@ function PartnerRow({
         <span>
           Last:{' '}
           {client.last_assigned_at
-            ? new Date(client.last_assigned_at).toLocaleString()
+            ? new Date(client.last_assigned_at).toLocaleString('en-US', { timeZone: 'America/Denver' })
             : 'never'}
         </span>
         <div className="ml-auto flex gap-2">

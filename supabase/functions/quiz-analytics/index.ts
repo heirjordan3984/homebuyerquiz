@@ -178,8 +178,18 @@ Deno.serve(async (req: Request) => {
       .sort((a, b) => a.questionId - b.questionId);
 
     const dailyTrend = new Map<string, { date: string; starts: number; completions: number }>();
+
+    function mstDate(iso: string): string {
+      const d = new Date(iso);
+      const mst = new Date(d.toLocaleString("en-US", { timeZone: "America/Denver" }));
+      const y = mst.getFullYear();
+      const m = String(mst.getMonth() + 1).padStart(2, "0");
+      const day = String(mst.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
     for (const s of sessions) {
-      const day = s.created_at.slice(0, 10);
+      const day = mstDate(s.created_at);
       let entry = dailyTrend.get(day);
       if (!entry) {
         entry = { date: day, starts: 0, completions: 0 };
@@ -189,7 +199,7 @@ Deno.serve(async (req: Request) => {
       if (s.completed) entry.completions++;
     }
     for (const lead of leads) {
-      const day = lead.created_at.slice(0, 10);
+      const day = mstDate(lead.created_at);
       let entry = dailyTrend.get(day);
       if (!entry) {
         entry = { date: day, starts: 0, completions: 0 };

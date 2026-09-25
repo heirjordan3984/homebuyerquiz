@@ -118,7 +118,7 @@ export default function AdminDashboard() {
   }, [load]);
 
   function formatDate(iso: string) {
-    try { return new Date(iso).toLocaleString(); } catch { return iso; }
+    try { return new Date(iso).toLocaleString('en-US', { timeZone: 'America/Denver' }); } catch { return iso; }
   }
 
   const stats = data?.stats;
@@ -546,7 +546,7 @@ function DailyTrendChart({ trend }: { trend: DailyTrend[] }) {
         {recent.map((d) => (
           <div key={d.date} className="flex-1 text-center" style={{ minWidth: 0 }}>
             <span className="text-[9px] font-medium block truncate" style={{ color: '#8A8A8A' }}>
-              {new Date(d.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
+              {new Date(d.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', timeZone: 'America/Denver' })}
             </span>
           </div>
         ))}

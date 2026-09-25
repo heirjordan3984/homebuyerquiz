@@ -87,7 +87,7 @@ export default function AdminAICaller() {
   function formatDate(iso: string | null) {
     if (!iso) return '—';
     try {
-      return new Date(iso).toLocaleString();
+      return new Date(iso).toLocaleString('en-US', { timeZone: 'America/Denver' });
     } catch {
       return iso;
     }
