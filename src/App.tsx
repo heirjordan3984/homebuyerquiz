@@ -280,6 +280,10 @@ function App() {
 
     if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
       window.fbq('track', 'Lead');
+      const creditScore = answers[12];
+      if (creditScore === 0 || creditScore === 1) {
+        window.fbq('track', 'Purchase', { content_name: 'HomeIQ Quiz Lead', value: 1, currency: 'USD' });
+      }
     }
 
     const addressToLookup = placeDetails?.address ?? textAnswers[3];
