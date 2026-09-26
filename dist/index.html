@@ -41,12 +41,30 @@
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq('init', '967436226412836');
-      fbq('track', 'PageView');
     </script>
-    <noscript>
-      <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=967436226412836&ev=PageView&noscript=1"/>
-    </noscript>
+    <script>
+      (function() {
+        var pageViewFired = false;
+        function firePageView() {
+          if (pageViewFired) return;
+          pageViewFired = true;
+          if (typeof window.fbq === 'function') {
+            window.fbq('track', 'PageView');
+          }
+          cleanup();
+        }
+        var timer = setTimeout(firePageView, 6000);
+        function onScroll() { firePageView(); }
+        function onClick() { firePageView(); }
+        function cleanup() {
+          clearTimeout(timer);
+          window.removeEventListener('scroll', onScroll, true);
+          window.removeEventListener('click', onClick, true);
+        }
+        window.addEventListener('scroll', onScroll, true);
+        window.addEventListener('click', onClick, true);
+      })();
+    </script>
     <!-- End Meta Pixel Code -->
     <script type="module" crossorigin src="/assets/index-B8QwaZaT.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-DJa932PY.css">
