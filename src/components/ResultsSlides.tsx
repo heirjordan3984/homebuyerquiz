@@ -596,9 +596,9 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPay
   const [downPaymentPct, setDownPaymentPct] = useState(defaultDownPaymentPct);
 
   // Base 30-year fixed rate, adjusted by credit score tier
-  // Excellent (740+): best rates, Good (670-739): moderate, Fair (580-669): higher
+  // Excellent (740+): best rates, Good (670-739): moderate, Fair (580-620): higher, Fair (621-669): slightly higher
   const creditTier = creditScoreAnswer ?? 1;
-  const rateAdjustments = [-0.5, 0, 0.75];
+  const rateAdjustments = [-0.5, 0, 1.0, 0.75];
   const baseRateLow = 6.25;
   const baseRateHigh = 7.25;
   const adj = rateAdjustments[creditTier] ?? 0;
