@@ -306,7 +306,7 @@ export default function AdminDashboard() {
                 if (!creditStat && !timelineStat) return null;
                 return (
                   <>
-                    {creditStat && <PieChartCard stat={creditStat} colors={['#2D6A4F', '#C9A84C', '#B5530A']} />}
+                    {creditStat && <PieChartCard stat={creditStat} colors={['#2D6A4F', '#C9A84C', '#D97706', '#B5530A']} />}
                     {timelineStat && <PieChartCard stat={timelineStat} colors={['#0D1B2A', '#2D6A4F', '#C9A84C', '#B5530A', '#8A8A8A']} />}
                   </>
                 );
