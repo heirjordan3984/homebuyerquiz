@@ -43,6 +43,12 @@ interface SessionRow {
 }
 
 const TOTAL_QUESTIONS = 18;
+const CREDIT_SCORE_OPTIONS = [
+  "Excellent (740+)",
+  "Good (670-739)",
+  "Fair (580-620)",
+  "Fair (621-669)",
+];
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -167,14 +173,25 @@ Deno.serve(async (req: Request) => {
     }
 
     const answerStats = Array.from(answerDistribution.values())
-      .map((entry) => ({
-        questionId: entry.questionId,
-        topic: entry.topic,
-        question: entry.question,
-        options: Array.from(entry.options.entries())
-          .map(([label, count]) => ({ label, count }))
-          .sort((a, b) => b.count - a.count),
-      }))
+      .map((entry) => {
+        const options = entry.questionId === 12
+          ? CREDIT_SCORE_OPTIONS.map((label) => ({ label, count: entry.options.get(label) ?? 0 }))
+          : Array.from(entry.options.entries())
+              .map(([label, count]) => ({ label, count }))
+              .sort((a, b) => b.count - a.count);
+
+        const legacyFairCount = entry.questionId === 12 ? entry.options.get("Fair (580-669)") ?? 0 : 0;
+        if (legacyFairCount > 0) {
+          options.push({ label: "Fair (580-669) · older responses", count: legacyFairCount });
+        }
+
+        return {
+          questionId: entry.questionId,
+          topic: entry.topic,
+          question: entry.question,
+          options,
+        };
+      })
       .sort((a, b) => a.questionId - b.questionId);
 
     const dailyTrend = new Map<string, { date: string; starts: number; completions: number }>();
