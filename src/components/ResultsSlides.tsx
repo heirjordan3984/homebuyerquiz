@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  TrendingUp, DollarSign, MapPin, Clock,
+  TrendingUp, MapPin, Clock,
   ArrowRight, Zap,
   Home, Calculator, Percent, Wallet, ShieldCheck, Building2,
 } from 'lucide-react';
@@ -18,8 +18,6 @@ function formatCurrencyShort(value: number): string {
   if (value >= 1_000) return `$${Math.round(value / 1_000)}K`;
   return `$${value.toLocaleString()}`;
 }
-
-const DOWN_PAYMENT_MULTIPLIERS = [0.18, 0.32, 0.52, 0.72];
 
 const BUDGET_RANGES: [number, number | null][] = [
   [0, 250_000],
@@ -85,7 +83,7 @@ function calcAffordablePrice(
 
 /* ---------- Fairway Home Mortgage box ---------- */
 
-function FairwayMortgageBox({ city, budgetAnswer }: { city: string | null; budgetAnswer?: number | null }) {
+function FairwayMortgageBox({ budgetAnswer }: { budgetAnswer?: number | null }) {
   const budgetLabel = budgetAnswer != null ? BUDGET_LABELS[budgetAnswer] : null;
 
   return (
@@ -582,7 +580,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
    SLIDE 2 — Budget & Mortgage: What Can You Actually Afford?
    ============================================================ */
 
-function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, downPaymentAnswer, budgetAnswer, creditScoreAnswer, isLoading, onNext, onRetake }: SlideProps) {
+function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, budgetAnswer, creditScoreAnswer, isLoading, onNext, onRetake }: SlideProps) {
   const city = extractCity(placeDetails?.address ?? addressText);
   const market = rentcastData?.market ?? null;
   const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
@@ -976,11 +974,8 @@ function PaymentRow({ label, rate, payment, highlight }: { label: string; rate: 
    SLIDE 3 — Buyer Checklist + Fairway Home Mortgage
    ============================================================ */
 
-function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budgetAnswer, leadName, isLoading, onRetake }: SlideProps) {
+function Slide3ChecklistLender({ budgetAnswer, leadName, isLoading, onRetake }: SlideProps) {
   void leadName;
-  const city = extractCity(placeDetails?.address ?? addressText);
-  const market = rentcastData?.market ?? null;
-  const medianPrice = market?.medianSalePrice ?? market?.averageSalePrice ?? null;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
@@ -1031,7 +1026,7 @@ function Slide3ChecklistLender({ placeDetails, addressText, rentcastData, budget
         {!isLoading && (
           <>
             {/* Fairway Home Mortgage recommendation */}
-            <FairwayMortgageBox city={city} budgetAnswer={budgetAnswer} />
+            <FairwayMortgageBox budgetAnswer={budgetAnswer} />
 
 
           </>

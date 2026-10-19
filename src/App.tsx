@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { BarChart3 } from 'lucide-react';
 import type { PlaceDetails } from './components/AddressAutocomplete';
 import IntroScreen from './components/IntroScreen';
 import QuizQuestion from './components/QuizQuestion';
@@ -22,6 +21,9 @@ import { computeResults, type Answers } from './utils/quizLogic';
 import { supabase } from './lib/supabase';
 import AdminShell from './components/AdminShell';
 import AdminDashboard from './components/AdminDashboard';
+import ClientLogin from './components/ClientLogin';
+import ClientDashboard from './components/ClientDashboard';
+import PreviewMenu from './components/PreviewMenu';
 
 type Phase = 'intro' | 'quiz' | 'gate' | 'evaluating' | 'results';
 type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full';
@@ -434,21 +436,15 @@ function App() {
     />
   ) : null;
 
-  const dashboardButton = isDev ? (
-    <a
-      href="#admin"
-      className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95"
-      style={{
-        backgroundColor: 'rgba(13,27,42,0.85)',
-        color: '#C9A84C',
-        backdropFilter: 'blur(8px)',
-        boxShadow: '0 2px 12px rgba(13,27,42,0.2)',
-      }}
-    >
-      <BarChart3 size={14} />
-      Dashboard
-    </a>
-  ) : null;
+  const dashboardButton = isDev ? <PreviewMenu /> : null;
+
+  if (hash === '#client-login') {
+    return <ClientLogin />;
+  }
+
+  if (hash === '#client-dashboard') {
+    return <ClientDashboard />;
+  }
 
   if (hash === '#admin') {
     return <AdminShell />;
