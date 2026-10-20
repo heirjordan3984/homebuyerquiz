@@ -192,13 +192,12 @@ export default function ClientDashboard({ preview = false }: { preview?: boolean
     <main className="min-h-screen" style={{ backgroundColor: '#07111B' }}>
       <PreviewMenu />
       <div className="w-full h-1" style={{ backgroundColor: '#F15B2A' }} />
-      <header className="max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-between gap-4">
-        <div>
-          <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mb-3" />
+      <header className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-center">
+        <div className="w-full text-center">
+          <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mx-auto mb-3" />
           <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#FFFFFF' }}>Lead Portal</h1>
-          <p className="font-dm text-sm mt-1" style={{ color: '#B8C4CE' }}>A clear view of the people raising their hand.</p>
         </div>
-        <button onClick={signOut} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white" style={{ color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.24)' }}><LogOut size={15} /> Sign out</button>
+        <button onClick={signOut} className="absolute right-4 sm:right-6 top-7 flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white" style={{ color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.24)' }}><LogOut size={15} /> Sign out</button>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
