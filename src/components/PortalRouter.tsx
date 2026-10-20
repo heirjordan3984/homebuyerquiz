@@ -49,7 +49,7 @@ export default function PortalRouter({ clientSlug }: { clientSlug: string }) {
   const clientName = formatClientName(clientSlug);
 
   if (!authenticated) {
-    return <ClientLogin portalMode clientName={clientName} />;
+    return <ClientLogin portalMode />;
   }
 
   return <ClientDashboard portalMode clientName={clientName} />;

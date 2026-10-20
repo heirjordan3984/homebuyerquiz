@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-export default function ClientLogin({ portalMode = false, clientName }: { portalMode?: boolean; clientName?: string }) {
+export default function ClientLogin({ portalMode = false }: { portalMode?: boolean }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,6 @@ export default function ClientLogin({ portalMode = false, clientName }: { portal
         <div className="text-center mb-8">
           <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mx-auto mb-8" />
           <h1 className="font-playfair font-bold mt-0" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#FFFFFF' }}>Lead Portal</h1>
-          {portalMode && clientName && <p className="font-dm text-sm mt-2" style={{ color: '#FFB347' }}>{clientName}</p>}
         </div>
 
         <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5', boxShadow: '0 18px 60px rgba(13,27,42,0.08)' }}>
