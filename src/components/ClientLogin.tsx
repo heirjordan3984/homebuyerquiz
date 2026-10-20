@@ -25,16 +25,14 @@ export default function ClientLogin() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#F3F1EC' }}>
+    <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#07111B' }}>
       <PreviewMenu />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center rounded-xl px-3 py-2" style={{ backgroundColor: '#081827' }}>
             <img src="/WildfireMarketingWhiteTransparent.png" alt="Wildfire Marketing" className="w-44 sm:w-52 h-auto" />
           </div>
-          <p className="font-dm font-semibold tracking-[0.2em] text-xs uppercase mt-5" style={{ color: '#D54822' }}>Client portal</p>
-          <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#081827' }}>Client Dashboard</h1>
-          <p className="font-dm text-sm mt-3 leading-relaxed" style={{ color: '#667085' }}>Sign in to review your captured leads and see how your campaign is performing.</p>
+          <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#FFFFFF' }}>Lead Portal</h1>
         </div>
 
         <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5', boxShadow: '0 18px 60px rgba(13,27,42,0.08)' }}>

@@ -186,10 +186,10 @@ export default function ClientDashboard() {
     setToDate('');
   }
 
-  if (!authReady || loading) return <div className="min-h-screen flex items-center justify-center font-dm" style={{ backgroundColor: '#F3F1EC', color: '#5A6573' }}>Loading your workspace…</div>;
+  if (!authReady || loading) return <div className="min-h-screen flex items-center justify-center font-dm" style={{ backgroundColor: '#07111B', color: '#5A6573' }}>Loading your workspace…</div>;
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#F3F1EC' }}>
+    <main className="min-h-screen" style={{ backgroundColor: '#07111B' }}>
       <PreviewMenu />
       <div className="w-full h-1" style={{ backgroundColor: '#F15B2A' }} />
       <header className="max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-between gap-4">
@@ -197,11 +197,10 @@ export default function ClientDashboard() {
           <div className="inline-flex items-center rounded-xl px-3 py-2" style={{ backgroundColor: '#081827' }}>
             <img src="/WildfireMarketingWhiteTransparent.png" alt="Wildfire Marketing" className="w-44 sm:w-52 h-auto" />
           </div>
-          <p className="font-dm font-semibold tracking-[0.2em] text-xs uppercase mt-5" style={{ color: '#D54822' }}>Client portal</p>
-          <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#081827' }}>Lead Intelligence</h1>
-          <p className="font-dm text-sm mt-1" style={{ color: '#667085' }}>A clear view of the people raising their hand.</p>
+          <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#FFFFFF' }}>Lead Portal</h1>
+          <p className="font-dm text-sm mt-1" style={{ color: '#B8C4CE' }}>A clear view of the people raising their hand.</p>
         </div>
-        <button onClick={signOut} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white" style={{ color: '#081827', border: '1px solid #DDD7CB' }}><LogOut size={15} /> Sign out</button>
+        <button onClick={signOut} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white" style={{ color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.24)' }}><LogOut size={15} /> Sign out</button>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
