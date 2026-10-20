@@ -91,6 +91,22 @@ function countQuestionsAnsweredBefore(screenIndex: number): number {
 
 const SESSION_KEY = 'homeiq_session';
 const QUIZ_TOKEN_KEY = 'homeiq_quiz_token';
+const QUIZ_FAVICON = '/homeiq-house-favicon.webp';
+const DEFAULT_FAVICON = '/wildfire-favicon.png';
+
+function useQuizFavicon(active: boolean) {
+  useEffect(() => {
+    const link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (!link) return;
+    if (active) {
+      link.type = 'image/webp';
+      link.href = QUIZ_FAVICON;
+    } else {
+      link.type = 'image/png';
+      link.href = DEFAULT_FAVICON;
+    }
+  }, [active]);
+}
 
 function getOrCreateQuizToken(): string {
   try {
@@ -177,6 +193,10 @@ function App() {
   const saved = loadSession();
 
   useTrackingCodes();
+
+  const portalSlug = getPortalSlug();
+  const isPortalOrAdmin = !!portalSlug || hash === '#admin' || hash === '#dashboard' || hash === '#client-login' || hash === '#client-dashboard';
+  useQuizFavicon(!isPortalOrAdmin);
 
   const [phase, setPhase] = useState<Phase>(saved?.phase ?? 'intro');
   const [currentScreenIndex, setCurrentScreenIndex] = useState<number>(saved?.currentScreenIndex ?? 0);
@@ -440,8 +460,6 @@ function App() {
 
   const isDev = import.meta.env.DEV;
   const dashboardButton = isDev ? <PreviewMenu /> : null;
-
-  const portalSlug = getPortalSlug();
 
   if (portalSlug) {
     return <><PortalRouter />{dashboardButton}</>;
