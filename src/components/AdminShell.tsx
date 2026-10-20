@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { Users, PhoneCall, Network, BarChart3, ArrowLeft } from 'lucide-react';
+import { Users, BarChart3, ArrowLeft, Plug } from 'lucide-react';
 import AdminLeads from './AdminLeads';
-import AdminAICaller from './AdminAICaller';
-import AdminPartners from './AdminPartners';
 import AdminDashboard from './AdminDashboard';
+import AdminIntegrations from './AdminIntegrations';
 
-type Tab = 'dashboard' | 'leads' | 'ai-caller' | 'partners';
+type Tab = 'analytics' | 'leads' | 'integrations';
 
 export default function AdminShell() {
-  const [tab, setTab] = useState<Tab>('dashboard');
+  const [tab, setTab] = useState<Tab>('analytics');
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF8' }}>
@@ -24,10 +23,10 @@ export default function AdminShell() {
         </a>
         <nav className="flex items-center gap-2 mb-2">
           <TabButton
-            active={tab === 'dashboard'}
-            onClick={() => setTab('dashboard')}
+            active={tab === 'analytics'}
+            onClick={() => setTab('analytics')}
             icon={<BarChart3 size={14} />}
-            label="Dashboard"
+            label="Analytics"
           />
           <TabButton
             active={tab === 'leads'}
@@ -36,24 +35,17 @@ export default function AdminShell() {
             label="Leads"
           />
           <TabButton
-            active={tab === 'ai-caller'}
-            onClick={() => setTab('ai-caller')}
-            icon={<PhoneCall size={14} />}
-            label="AI Caller"
-          />
-          <TabButton
-            active={tab === 'partners'}
-            onClick={() => setTab('partners')}
-            icon={<Network size={14} />}
-            label="Partners"
+            active={tab === 'integrations'}
+            onClick={() => setTab('integrations')}
+            icon={<Plug size={14} />}
+            label="Integrations"
           />
         </nav>
       </div>
       <div className="max-w-6xl mx-auto px-6 py-6">
-        {tab === 'dashboard' && <AdminDashboard />}
+        {tab === 'analytics' && <AdminDashboard />}
         {tab === 'leads' && <AdminLeads embedded />}
-        {tab === 'ai-caller' && <AdminAICaller />}
-        {tab === 'partners' && <AdminPartners />}
+        {tab === 'integrations' && <AdminIntegrations />}
       </div>
     </div>
   );

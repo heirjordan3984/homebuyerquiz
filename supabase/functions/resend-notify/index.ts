@@ -1,10 +1,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
+
+const supabaseAdmin = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
 type QuizAnswer = {
   id: number;
@@ -21,6 +27,24 @@ type LeadPayload = {
   propertyValue?: number | null;
   quizAnswers?: QuizAnswer[];
 };
+
+async function getEmailRecipients(): Promise<string[]> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("integration_config")
+      .select("value")
+      .eq("key", "email_recipients")
+      .maybeSingle();
+    if (error || !data) return ["jordan@wildfirelocal.net"];
+    const recipients = data.value;
+    if (Array.isArray(recipients) && recipients.length > 0) {
+      return recipients.filter((r: unknown) => typeof r === "string" && r.includes("@"));
+    }
+    return ["jordan@wildfirelocal.net"];
+  } catch {
+    return ["jordan@wildfirelocal.net"];
+  }
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -69,12 +93,14 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "Name and email are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    const recipients = await getEmailRecipients();
+
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: "HomeIQ Leads <onboarding@resend.dev>",
-        to: ["jordan@wildfirelocal.net"],
+        to: recipients,
         subject: `New Mortgage Lead: ${data.name}`,
         html: buildEmailHtml(data),
       }),

@@ -33,3 +33,6 @@ verify_jwt = false
 
 [functions.resend-notify]
 verify_jwt = false
+
+[functions.manage-users]
+verify_jwt = false

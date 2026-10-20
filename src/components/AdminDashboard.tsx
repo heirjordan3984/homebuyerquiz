@@ -190,7 +190,7 @@ export default function AdminDashboard() {
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div>
             <h1 className="font-playfair font-bold mb-1" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', color: '#0D1B2A' }}>
-              Analytics Dashboard
+              Analytics
             </h1>
             <p className="text-sm" style={{ color: '#5A6573' }}>
               Form submission results, completion stats, and drop-off analysis.
@@ -205,13 +205,6 @@ export default function AdminDashboard() {
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               Refresh
             </button>
-            <a
-              href="#admin"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#0D1B2A' }}
-            >
-              Admin Panel
-            </a>
           </div>
         </div>
 
