@@ -10,7 +10,7 @@ export default function AdminShell() {
   const [tab, setTab] = useState<Tab>('analytics');
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FAFAF8' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#EDE9E0' }}>
       <div className="w-full h-1" style={{ backgroundColor: '#C9A84C' }} />
       <div className="max-w-6xl mx-auto px-6 pt-8">
         <a
