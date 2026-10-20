@@ -65,7 +65,7 @@ function getAnswer(lead: Lead, questionId: number): string {
   return answer?.selected_option_text ?? answer?.text_answer ?? '';
 }
 
-export default function ClientDashboard() {
+export default function ClientDashboard({ preview = false }: { preview?: boolean }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [period, setPeriod] = useState<Period>('week');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -85,7 +85,7 @@ export default function ClientDashboard() {
     async function load() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!active) return;
-      if (!sessionData.session) {
+      if (!sessionData.session && !preview) {
         window.location.hash = 'client-login';
         setAuthReady(true);
         setLoading(false);

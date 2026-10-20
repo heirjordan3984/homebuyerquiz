@@ -443,7 +443,7 @@ function App() {
   }
 
   if (hash === '#client-dashboard') {
-    return <ClientDashboard />;
+    return <ClientDashboard preview={isDev} />;
   }
 
   if (hash === '#admin') {
