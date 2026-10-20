@@ -272,8 +272,8 @@ function LeadRow({ lead, expanded, onToggle }: { lead: Lead; expanded: boolean; 
       <div className="min-w-0">
         <p className="font-dm font-semibold text-sm truncate" style={{ color: '#081827' }}>{lead.name || 'Unnamed lead'}</p>
         <div className="flex flex-wrap gap-x-4 gap-y-2 mt-2 font-dm text-xs" style={{ color: '#536273' }}>
-          <span className="inline-flex items-center gap-1.5"><Mail size={13} style={{ color: '#D54822' }} />{lead.email || 'No email'}</span>
           <span className="inline-flex items-center gap-1.5"><Phone size={13} style={{ color: '#D54822' }} />{lead.phone ? formatPhone(lead.phone) : 'No phone'}</span>
+          <span className="inline-flex items-center gap-1.5"><Mail size={13} style={{ color: '#D54822' }} />{lead.email || 'No email'}</span>
           <span>{formatDate(lead.created_at)}</span>
           {lead.property_address && <span className="truncate max-w-xs">{lead.property_address}</span>}
         </div>
