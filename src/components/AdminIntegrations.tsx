@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import {
-  Link2, Copy, Check, Users, Plus, Trash2, Mail, EyeOff, Save,
+  Link2, Copy, Check, Users, Plus, Trash2, Mail, Eye, EyeOff, Save,
   Webhook, Facebook, AlertCircle, Loader2, Pencil, X,
 } from 'lucide-react';
 
@@ -238,8 +238,15 @@ export default function AdminIntegrations() {
               </div>
               <input type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Email address" className="w-full rounded-xl px-3.5 py-2.5 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
               <div className="relative">
-                <input type={showUserPassword ? 'text' : 'password'} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} placeholder={editingUser ? 'New password (leave blank to keep)' : 'Password'} className="w-full rounded-xl px-3.5 py-2.5 pr-10 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
-                <button type="button" onClick={() => setShowUserPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2"><EyeOff size={16} style={{ color: '#8A8A8A' }} /></button>
+                <input type={showUserPassword ? 'text' : 'password'} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} placeholder={editingUser ? 'New password (leave blank to keep)' : 'Password'} className="w-full rounded-xl px-3.5 py-2.5 pr-20 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <button type="button" onClick={() => { if (userPassword) copyToClipboard(userPassword, 'user-password'); }} disabled={!userPassword} className="p-1.5 rounded-lg transition-colors hover:bg-stone-100 disabled:opacity-40" title="Copy password">
+                    {copied === 'user-password' ? <Check size={15} style={{ color: '#2D6A4F' }} /> : <Copy size={15} style={{ color: '#8A8A8A' }} />}
+                  </button>
+                  <button type="button" onClick={() => setShowUserPassword((v) => !v)} className="p-1.5 rounded-lg transition-colors hover:bg-stone-100" title={showUserPassword ? 'Hide password' : 'Show password'}>
+                    {showUserPassword ? <EyeOff size={16} style={{ color: '#8A8A8A' }} /> : <Eye size={16} style={{ color: '#8A8A8A' }} />}
+                  </button>
+                </div>
               </div>
               {userError && <p className="font-dm text-xs" style={{ color: '#8A2A2A' }}>{userError}</p>}
               <button onClick={saveUser} disabled={userSaving || !userEmail || (!editingUser && !userPassword)} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-dm font-semibold text-sm text-white transition-opacity disabled:opacity-60" style={{ backgroundColor: '#0D1B2A' }}>
