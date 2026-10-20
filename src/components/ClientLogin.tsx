@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import PreviewMenu from './PreviewMenu';
 
 export default function ClientLogin() {
   const [email, setEmail] = useState('');
@@ -24,21 +25,25 @@ export default function ClientLogin() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#F6F4EF' }}>
+    <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#F3F1EC' }}>
+      <PreviewMenu />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <span className="font-dm font-medium tracking-[0.28em] text-xs uppercase" style={{ color: '#C9A84C' }}>HomeIQ</span>
-          <h1 className="font-playfair font-bold mt-4" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#0D1B2A' }}>Client Dashboard</h1>
+          <div className="inline-flex items-center rounded-xl px-3 py-2" style={{ backgroundColor: '#081827' }}>
+            <img src="/WildfireMarketingWhiteTransparent.png" alt="Wildfire Marketing" className="w-44 sm:w-52 h-auto" />
+          </div>
+          <p className="font-dm font-semibold tracking-[0.2em] text-xs uppercase mt-5" style={{ color: '#D54822' }}>Client portal</p>
+          <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#081827' }}>Client Dashboard</h1>
           <p className="font-dm text-sm mt-3 leading-relaxed" style={{ color: '#667085' }}>Sign in to review your captured leads and see how your campaign is performing.</p>
         </div>
 
         <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5', boxShadow: '0 18px 60px rgba(13,27,42,0.08)' }}>
           <div className="flex items-center gap-3 mb-7">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#F7F0DE', color: '#B58B27' }}>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#FFF0E8', color: '#D54822' }}>
               <LockKeyhole size={20} />
             </div>
             <div>
-              <p className="font-dm font-semibold text-sm" style={{ color: '#0D1B2A' }}>Private client access</p>
+              <p className="font-dm font-semibold text-sm" style={{ color: '#081827' }}>Private client access</p>
               <p className="font-dm text-xs mt-0.5" style={{ color: '#8A8A8A' }}>Your leads are visible only to your team.</p>
             </div>
           </div>
@@ -46,14 +51,14 @@ export default function ClientLogin() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block">
               <span className="font-dm text-xs font-semibold uppercase tracking-wider" style={{ color: '#5A6573' }}>Email address</span>
-              <input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-xl px-4 py-3.5 outline-none font-dm text-sm" style={{ border: '1px solid #DDD7CB', color: '#0D1B2A', backgroundColor: '#FCFBF8' }} />
+              <input type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-xl px-4 py-3.5 outline-none font-dm text-sm" style={{ border: '1px solid #DDD7CB', color: '#081827', backgroundColor: '#FCFBF8' }} />
             </label>
             <label className="block">
               <span className="font-dm text-xs font-semibold uppercase tracking-wider" style={{ color: '#5A6573' }}>Password</span>
-              <input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl px-4 py-3.5 outline-none font-dm text-sm" style={{ border: '1px solid #DDD7CB', color: '#0D1B2A', backgroundColor: '#FCFBF8' }} />
+              <input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl px-4 py-3.5 outline-none font-dm text-sm" style={{ border: '1px solid #DDD7CB', color: '#081827', backgroundColor: '#FCFBF8' }} />
             </label>
             {error && <p role="alert" className="rounded-xl px-4 py-3 text-sm font-dm" style={{ color: '#8A2A2A', backgroundColor: '#FBEEEE', border: '1px solid #F1D6D6' }}>{error}</p>}
-            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-dm font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60" style={{ backgroundColor: '#0D1B2A', color: '#FFFFFF' }}>
+            <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-dm font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60" style={{ backgroundColor: '#081827', color: '#FFFFFF' }}>
               {loading ? 'Signing in…' : 'Sign in'}
               {!loading && <ArrowRight size={16} />}
             </button>
@@ -65,7 +70,7 @@ export default function ClientLogin() {
           </div>
         </div>
 
-        <a href="#" className="block text-center mt-6 font-dm text-sm font-semibold" style={{ color: '#0D1B2A' }}>Back to quiz preview</a>
+        <a href="#" className="block text-center mt-6 font-dm text-sm font-semibold" style={{ color: '#081827' }}>Back to quiz preview</a>
       </div>
     </main>
   );
