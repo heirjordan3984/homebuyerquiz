@@ -431,7 +431,7 @@ function App() {
   const portalSlug = getPortalSlug();
 
   if (portalSlug) {
-    return <PortalRouter clientSlug={portalSlug} />;
+    return <PortalRouter />;
   }
 
   const resultsSlideLabels: { view: ResultsView; label: string }[] = [

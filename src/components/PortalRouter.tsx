@@ -3,15 +3,7 @@ import { supabase } from '../lib/supabase';
 import ClientLogin from './ClientLogin';
 import ClientDashboard from './ClientDashboard';
 
-export function formatClientName(slug: string): string {
-  return slug
-    .split('-')
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
-export default function PortalRouter({ clientSlug }: { clientSlug: string }) {
+export default function PortalRouter() {
   const [authReady, setAuthReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -47,11 +39,9 @@ export default function PortalRouter({ clientSlug }: { clientSlug: string }) {
     );
   }
 
-  const clientName = formatClientName(clientSlug);
-
   if (!authenticated) {
     return <ClientLogin portalMode />;
   }
 
-  return <ClientDashboard portalMode clientName={clientName} />;
+  return <ClientDashboard portalMode />;
 }

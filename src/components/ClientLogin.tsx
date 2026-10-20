@@ -36,7 +36,7 @@ export default function ClientLogin({ portalMode = false }: { portalMode?: boole
     <main className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#07111B' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mx-auto mb-8" />
+          <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-48 max-w-full h-auto mx-auto mb-8" />
           <h1 className="font-playfair font-bold mt-0" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#FFFFFF' }}>Lead Portal</h1>
         </div>
 
