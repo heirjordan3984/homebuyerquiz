@@ -351,6 +351,28 @@ export default function AdminIntegrations() {
         </div>
       </SectionCard>
 
+      {/* Email Notifications */}
+      <SectionCard icon={<Mail size={18} />} title="Email Notifications" description="Where lead notification emails are sent via Resend. Add or remove recipient addresses.">
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {emailRecipients.map((email, index) => (
+              <span key={index} className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 font-dm text-sm font-medium" style={{ backgroundColor: '#FFF0E8', color: '#7A5E1F' }}>
+                {email}
+                <button onClick={() => {
+                  const updated = emailRecipients.filter((_, i) => i !== index);
+                  saveConfig('email_recipients', updated);
+                }}><X size={13} /></button>
+              </span>
+            ))}
+            {emailRecipients.length === 0 && <p className="font-dm text-sm py-2" style={{ color: '#8A8A8A' }}>No recipients configured.</p>}
+          </div>
+          <EmailAddField onAdd={(email) => {
+            const updated = [...emailRecipients, email];
+            saveConfig('email_recipients', updated);
+          }} saving={saving === 'email_recipients'} />
+        </div>
+      </SectionCard>
+
       {/* Tracking Codes */}
       <SectionCard icon={<Facebook size={18} />} title="Tracking Codes" description="Facebook Pixel and event tracking codes installed on the quiz.">
         <div className="space-y-4">
@@ -420,28 +442,6 @@ export default function AdminIntegrations() {
               </button>
             )}
           </div>
-        </div>
-      </SectionCard>
-
-      {/* Email Notifications */}
-      <SectionCard icon={<Mail size={18} />} title="Email Notifications" description="Where lead notification emails are sent via Resend. Add or remove recipient addresses.">
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {emailRecipients.map((email, index) => (
-              <span key={index} className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 font-dm text-sm font-medium" style={{ backgroundColor: '#FFF0E8', color: '#7A5E1F' }}>
-                {email}
-                <button onClick={() => {
-                  const updated = emailRecipients.filter((_, i) => i !== index);
-                  saveConfig('email_recipients', updated);
-                }}><X size={13} /></button>
-              </span>
-            ))}
-            {emailRecipients.length === 0 && <p className="font-dm text-sm py-2" style={{ color: '#8A8A8A' }}>No recipients configured.</p>}
-          </div>
-          <EmailAddField onAdd={(email) => {
-            const updated = [...emailRecipients, email];
-            saveConfig('email_recipients', updated);
-          }} saving={saving === 'email_recipients'} />
         </div>
       </SectionCard>
 
