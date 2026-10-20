@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ArrowRight } from 'lucide-react';
 import type { Question } from '../data/questions';
 import AddressAutocomplete from './AddressAutocomplete';
+import BrandMark from './BrandMark';
 import type { PlaceDetails } from './AddressAutocomplete';
 
 interface QuizQuestionProps {
@@ -104,12 +105,7 @@ export default function QuizQuestion({
         </button>
 
         <div className="flex-1 flex justify-center">
-          <span
-            className="font-dm font-medium tracking-[0.25em] text-xs uppercase"
-            style={{ color: '#C9A84C' }}
-          >
-            HomeIQ
-          </span>
+          <BrandMark />
         </div>
 
         <div className="w-9 shrink-0" />

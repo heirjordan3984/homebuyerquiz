@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, DollarSign, Star, CheckCircle } from 'lucide-react';
 import { questions } from '../data/questions';
+import BrandMark from './BrandMark';
 
 const BASE = 'https://zlgzefcnaszfonnmfgcb.supabase.co/storage/v1/object/public/homeowner-images/';
 const GRID_IMAGES = Array.from({ length: 55 }, (_, i) => `${BASE}homeowner_${String(i + 1).padStart(2, '0')}.jpg`);
@@ -36,6 +37,11 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
       className="min-h-screen flex flex-col items-center px-4 pt-8 pb-16 relative overflow-hidden"
       style={{ backgroundColor: '#FAFAF8' }}
     >
+      {/* Brand logo / wordmark */}
+      <div className="animate-fade-in stagger-1 w-full flex justify-center mb-4">
+        <BrandMark />
+      </div>
+
       {/* Live count pill */}
       <div className="animate-fade-in stagger-1 mb-6 w-full flex justify-center">
         <div

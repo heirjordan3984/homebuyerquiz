@@ -2,6 +2,7 @@ import { TrendingUp, MapPin, ExternalLink, Clock, TrendingDown } from 'lucide-re
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
+import BrandMark from './BrandMark';
 
 const GMAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -156,12 +157,7 @@ export default function ResultsFullAnalysis({ result, placeDetails, addressText,
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <div className="mb-8 text-center">
-          <span
-            className="font-dm font-medium tracking-[0.25em] text-xs uppercase"
-            style={{ color: '#C9A84C' }}
-          >
-            HomeIQ
-          </span>
+          <BrandMark />
         </div>
 
         <div className="text-center mb-10">

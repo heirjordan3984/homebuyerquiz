@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Sparkles } from 'lucide-react';
+import BrandMark from './BrandMark';
 
 interface InfoSlideProps {
   headline: string;
@@ -31,12 +32,7 @@ export default function InfoSlide({ headline, body, illustration, onContinue, pr
       >
         <div className="w-9 shrink-0" />
         <div className="flex-1 flex justify-center">
-          <span
-            className="font-dm font-medium tracking-[0.25em] text-xs uppercase"
-            style={{ color: '#C9A84C' }}
-          >
-            HomeIQ
-          </span>
+          <BrandMark />
         </div>
         <div className="w-9 shrink-0" />
       </div>

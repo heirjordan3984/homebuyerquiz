@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import {
   Link2, Copy, Check, Users, Plus, Trash2, Mail, Eye, EyeOff, Save,
-  Webhook, Facebook, AlertCircle, Loader2, Pencil, X,
+  Webhook, Facebook, AlertCircle, Loader2, Pencil, X, Upload, Building2, Image as ImageIcon,
 } from 'lucide-react';
+import { refreshBranding } from '../hooks/useBranding';
 
 type ConfigMap = Record<string, unknown>;
 
@@ -33,6 +34,9 @@ export default function AdminIntegrations() {
   const [showUserPassword, setShowUserPassword] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
   const [userSaving, setUserSaving] = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -48,6 +52,8 @@ export default function AdminIntegrations() {
       const map: ConfigMap = {};
       (configData ?? []).forEach((row: { key: string; value: unknown }) => { map[row.key] = row.value; });
       setConfig(map);
+      setBusinessName(typeof map.business_name === 'string' && map.business_name ? map.business_name : 'HomeIQ');
+      setLogoUrl(typeof map.logo_url === 'string' ? map.logo_url : null);
       if (usersRes.ok) {
         const parsed = await usersRes.json() as { users: AuthUser[] };
         setUsers(parsed.users ?? []);
@@ -177,6 +183,86 @@ export default function AdminIntegrations() {
           <span>{error}</span>
         </div>
       )}
+
+      {/* Branding */}
+      <SectionCard icon={<Building2 size={18} />} title="Business Branding" description="The business name and logo shown throughout the quiz. Changes appear instantly on every page.">
+        <div className="space-y-5">
+          <div>
+            <label className="font-dm text-xs font-semibold uppercase tracking-wider block mb-1.5" style={{ color: '#7A8491' }}>Business Name</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <input
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder="HomeIQ"
+                className="flex-1 min-w-[180px] rounded-xl px-3.5 py-2.5 font-dm text-sm outline-none"
+                style={{ border: '1px solid #DDD7CB', color: '#081027' }}
+              />
+              <button
+                onClick={async () => {
+                  const name = businessName.trim() || 'HomeIQ';
+                  await saveConfig('business_name', name);
+                  refreshBranding({ businessName: name, logoUrl });
+                }}
+                disabled={saving === 'business_name' || !businessName.trim()}
+                className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 font-dm text-xs font-semibold text-white transition-opacity disabled:opacity-60"
+                style={{ backgroundColor: '#0D1B2A' }}
+              >
+                {saving === 'business_name' ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save
+              </button>
+            </div>
+            <p className="font-dm text-xs mt-1.5" style={{ color: '#8A8A8A' }}>This text appears as the wordmark on every quiz page when no logo is uploaded.</p>
+          </div>
+
+          <div className="border-t pt-5" style={{ borderColor: '#F0EDE8' }}>
+            <label className="font-dm text-xs font-semibold uppercase tracking-wider block mb-2" style={{ color: '#7A8491' }}>Logo Image</label>
+            <div className="flex items-start gap-4 flex-wrap">
+              <div className="w-24 h-24 rounded-xl flex items-center justify-center shrink-0 overflow-hidden" style={{ border: '1px solid #E6E0D5', backgroundColor: '#FCFBF8' }}>
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                ) : (
+                  <ImageIcon size={24} style={{ color: '#C9C2B5' }} />
+                )}
+              </div>
+              <div className="flex-1 min-w-[200px] space-y-2">
+                <label className="flex items-center justify-center gap-2 w-full rounded-xl py-2.5 font-dm text-sm font-semibold cursor-pointer transition-colors hover:bg-stone-50" style={{ border: '1px dashed #C9A84C', color: '#0D1B2A' }}>
+                  {uploadingLogo ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                  {uploadingLogo ? 'Uploading…' : 'Upload logo'}
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingLogo(true);
+                    try {
+                      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+                      const filename = `logo-${Date.now()}.${ext}`;
+                      const { error: upErr } = await supabase.storage.from('branding-assets').upload(filename, file, { contentType: file.type, upsert: true });
+                      if (upErr) throw upErr;
+                      const { data: urlData } = supabase.storage.from('branding-assets').getPublicUrl(filename);
+                      const url = urlData.publicUrl;
+                      setLogoUrl(url);
+                      await saveConfig('logo_url', url);
+                      refreshBranding({ businessName: businessName.trim() || 'HomeIQ', logoUrl: url });
+                    } catch (err) {
+                      setError(`Logo upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                    } finally {
+                      setUploadingLogo(false);
+                    }
+                  }} />
+                </label>
+                {logoUrl && (
+                  <button onClick={async () => {
+                    setLogoUrl(null);
+                    await saveConfig('logo_url', null);
+                    refreshBranding({ businessName: businessName.trim() || 'HomeIQ', logoUrl: null });
+                  }} disabled={saving === 'logo_url'} className="flex items-center gap-1.5 font-dm text-xs font-semibold transition-colors hover:bg-red-50" style={{ color: '#8A2A2A' }}>
+                    <Trash2 size={13} /> Remove logo
+                  </button>
+                )}
+                <p className="font-dm text-xs" style={{ color: '#8A8A8A' }}>When a logo is uploaded, it replaces the text wordmark on the quiz home page. Use PNG or SVG with a transparent background for best results.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
 
       {/* Lead Portal URL */}
       <SectionCard icon={<Link2 size={18} />} title="Lead Portal URL" description="The URL clients visit to log in and view their leads. The domain is fixed; edit the path for each client.">

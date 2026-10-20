@@ -7,6 +7,7 @@ import {
 import type { QuizResult } from '../utils/quizLogic';
 import type { PlaceDetails } from './AddressAutocomplete';
 import type { RentcastData } from '../types/rentcast';
+import BrandMark from './BrandMark';
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
@@ -421,9 +422,7 @@ function Slide1MarketOpportunity({ placeDetails, addressText, rentcastData, onNe
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <div className="mb-6 text-center">
-          <span className="font-dm font-medium tracking-[0.25em] text-xs uppercase" style={{ color: '#C9A84C' }}>
-            HomeIQ
-          </span>
+          <BrandMark />
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -663,9 +662,7 @@ function Slide2BudgetMortgage({ placeDetails, addressText, rentcastData, budgetA
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <div className="mb-6 text-center">
-          <span className="font-dm font-medium tracking-[0.25em] text-xs uppercase" style={{ color: '#C9A84C' }}>
-            HomeIQ
-          </span>
+          <BrandMark />
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -983,9 +980,7 @@ function Slide3ChecklistLender({ budgetAnswer, leadName, isLoading, onRetake }: 
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         <div className="mb-6 text-center">
-          <span className="font-dm font-medium tracking-[0.25em] text-xs uppercase" style={{ color: '#C9A84C' }}>
-            HomeIQ
-          </span>
+          <BrandMark />
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-8">

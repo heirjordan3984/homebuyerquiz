@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import BrandMark from './BrandMark';
 
 interface EvaluatingScreenProps {
   onComplete: () => void;
@@ -88,12 +89,9 @@ export default function EvaluatingScreen({ onComplete }: EvaluatingScreenProps) 
 
       <div className="relative z-10 w-full max-w-sm">
         {/* Wordmark */}
-        <p
-          className="font-dm font-medium tracking-[0.25em] text-xs uppercase text-center mb-12"
-          style={{ color: '#C9A84C' }}
-        >
-          HomeIQ
-        </p>
+        <div className="flex justify-center mb-12">
+          <BrandMark />
+        </div>
 
         {/* Spinner */}
         <div className="flex justify-center mb-10">
