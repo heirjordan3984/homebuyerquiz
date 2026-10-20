@@ -217,7 +217,7 @@ export default function ClientDashboard({ preview = false, portalMode = false }:
         {error && <div className="rounded-xl px-4 py-3 mb-6 font-dm text-sm" style={{ color: '#8A2A2A', backgroundColor: '#FBEEEE', border: '1px solid #F1D6D6' }}>{error}</div>}
         <section className="rounded-3xl p-5 sm:p-7 mb-6" style={{ backgroundColor: '#081827', color: '#FFFFFF', boxShadow: '0 18px 60px rgba(13,27,42,0.12)' }}>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div><p className="font-dm text-xs uppercase tracking-[0.18em]" style={{ color: '#FFB347' }}>Lead pulse</p><h2 className="font-playfair text-2xl font-semibold mt-1">Performance at a glance</h2></div>
+            <div><h2 className="font-playfair text-2xl font-semibold">Performance at a glance</h2></div>
             <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
               {(Object.keys(periodLabels) as Period[]).map((value) => <button key={value} onClick={() => setPeriod(value)} className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ backgroundColor: period === value ? '#F15B2A' : 'transparent', color: period === value ? '#081827' : '#D8DEE7' }}>{periodLabels[value]}</button>)}
             </div>
