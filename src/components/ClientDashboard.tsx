@@ -194,8 +194,8 @@ export default function ClientDashboard() {
       <div className="w-full h-1" style={{ backgroundColor: '#F15B2A' }} />
       <header className="max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center rounded-xl px-3 py-2" style={{ backgroundColor: '#081827' }}>
-            <img src="/WildfireMarketingWhiteTransparent.png" alt="Wildfire Marketing" className="w-44 sm:w-52 h-auto" />
+          <div className="inline-flex items-center rounded-xl px-3 py-2" style={{ backgroundColor: '#07111B' }}>
+            <img src="/WildfireMarketingLogoTransparent.png" alt="Wildfire Marketing" className="w-44 sm:w-52 h-auto" />
           </div>
           <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#FFFFFF' }}>Lead Portal</h1>
           <p className="font-dm text-sm mt-1" style={{ color: '#B8C4CE' }}>A clear view of the people raising their hand.</p>
