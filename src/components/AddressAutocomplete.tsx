@@ -70,6 +70,7 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mapsReady, setMapsReady] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceDetails | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,6 +140,7 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
     const val = e.target.value;
     setLocalText(val);
     setSelectedIndex(-1);
+    setSelectedPlace(null);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => fetchPredictions(val), 280);
   }
@@ -161,9 +163,8 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
           lng: loc.lng(),
           mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}&query_place_id=${item.placeId}`,
         };
+        setSelectedPlace(details);
         onSubmit(details.address, details);
-      } else {
-        onSubmit(item.fullText);
       }
     });
   }
@@ -179,18 +180,11 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
       e.preventDefault();
       if (selectedIndex >= 0 && predictions[selectedIndex]) {
         handleSelectPrediction(predictions[selectedIndex]);
-      } else if (localText.trim()) {
-        handleSubmitText();
       }
     } else if (e.key === 'Escape') {
       setShowDropdown(false);
       setSelectedIndex(-1);
     }
-  }
-
-  function handleSubmitText() {
-    if (!localText.trim()) return;
-    onSubmit(localText.trim());
   }
 
   return (
@@ -209,7 +203,7 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
           value={localText}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder ?? 'Enter a city or area...'}
+          placeholder={placeholder ?? 'Search for a city or area...'}
           autoComplete="off"
           className="w-full rounded-xl font-dm outline-none transition-all duration-200"
           style={{
@@ -237,14 +231,20 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
           </div>
         )}
 
-        {!loading && localText.trim() && (
-          <button
-            onClick={handleSubmitText}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90"
-            style={{ backgroundColor: '#C9A84C', color: '#FFFFFF' }}
+        {!loading && localText.trim() && !selectedPlace && (
+          <div
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
+            style={{ color: '#D1D5DB' }}
+            title="Select a suggestion from the list"
           >
             <ArrowRight size={15} strokeWidth={2.5} />
-          </button>
+          </div>
+        )}
+
+        {selectedPlace && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#2D6A4F' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          </div>
         )}
 
         {showDropdown && predictions.length > 0 && (
@@ -289,18 +289,18 @@ export default function AddressAutocomplete({ value, onSubmit, placeholder }: Ad
       </div>
 
       <button
-        onClick={handleSubmitText}
-        disabled={!localText.trim()}
+        onClick={() => { if (selectedPlace) onSubmit(selectedPlace.address, selectedPlace); }}
+        disabled={!selectedPlace}
         className="w-full rounded-xl font-dm font-semibold text-sm transition-all duration-200 active:scale-[0.98]"
         style={{
           padding: '14px 16px',
-          backgroundColor: localText.trim() ? '#C9A84C' : '#E5E7EB',
-          color: localText.trim() ? '#FFFFFF' : '#9CA3AF',
-          cursor: localText.trim() ? 'pointer' : 'default',
+          backgroundColor: selectedPlace ? '#C9A84C' : '#E5E7EB',
+          color: selectedPlace ? '#FFFFFF' : '#9CA3AF',
+          cursor: selectedPlace ? 'pointer' : 'default',
           border: 'none',
         }}
       >
-        Continue
+        {selectedPlace ? 'Continue' : 'Select a city from the list'}
       </button>
     </div>
   );

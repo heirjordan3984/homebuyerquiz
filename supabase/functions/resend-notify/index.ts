@@ -28,22 +28,32 @@ type LeadPayload = {
   quizAnswers?: QuizAnswer[];
 };
 
-async function getEmailRecipients(): Promise<string[]> {
+async function getConfig(key: string): Promise<unknown> {
   try {
     const { data, error } = await supabaseAdmin
       .from("integration_config")
       .select("value")
-      .eq("key", "email_recipients")
+      .eq("key", key)
       .maybeSingle();
-    if (error || !data) return ["jordan@wildfirelocal.net"];
-    const recipients = data.value;
-    if (Array.isArray(recipients) && recipients.length > 0) {
-      return recipients.filter((r: unknown) => typeof r === "string" && r.includes("@"));
-    }
-    return ["jordan@wildfirelocal.net"];
+    if (error || !data) return null;
+    return data.value;
   } catch {
-    return ["jordan@wildfirelocal.net"];
+    return null;
   }
+}
+
+async function getEmailRecipients(): Promise<string[]> {
+  const recipients = await getConfig("email_recipients");
+  if (Array.isArray(recipients) && recipients.length > 0) {
+    return recipients.filter((r: unknown) => typeof r === "string" && r.includes("@"));
+  }
+  return ["jordan@wildfirelocal.net"];
+}
+
+async function getBusinessName(): Promise<string> {
+  const name = await getConfig("business_name");
+  if (typeof name === "string" && name) return name;
+  return "HomeIQ";
 }
 
 function escapeHtml(value: string): string {
@@ -64,7 +74,7 @@ function formatCurrency(value: number | null | undefined): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
 }
 
-function buildEmailHtml(data: LeadPayload): string {
+function buildEmailHtml(data: LeadPayload, businessName: string): string {
   const contactRows = [
     ["Name", display(data.name)],
     ["Phone", display(data.phone)],
@@ -76,7 +86,7 @@ function buildEmailHtml(data: LeadPayload): string {
     ...(data.quizAnswers ?? []).map((answer) => [`Q${answer.id} · ${display(answer.question)}`, display(answer.selected_option_text ?? answer.text_answer)]),
   ];
   const rows = [...contactRows, ...detailRows].map(([label, value]) => `<tr><td style="padding:10px 12px;border-bottom:1px solid #e7e1d8;color:#697586;font-size:13px;vertical-align:top">${escapeHtml(label)}</td><td style="padding:10px 12px;border-bottom:1px solid #e7e1d8;color:#17202a;font-size:14px;vertical-align:top">${escapeHtml(value)}</td></tr>`).join("");
-  return `<div style="font-family:Arial,sans-serif;max-width:680px;color:#17202a"><h1 style="font-size:24px;margin:0 0 8px">New Mortgage Lead Generated</h1><p style="color:#697586;margin:0 0 20px">A new HomeIQ form submission has been received.</p><table style="width:100%;border-collapse:collapse;background:#faf9f6">${rows}</table></div>`;
+  return `<div style="font-family:Arial,sans-serif;max-width:680px;color:#17202a"><h1 style="font-size:24px;margin:0 0 8px">New Mortgage Lead Generated</h1><p style="color:#697586;margin:0 0 20px">A new ${escapeHtml(businessName)} form submission has been received.</p><table style="width:100%;border-collapse:collapse;background:#faf9f6">${rows}</table></div>`;
 }
 
 Deno.serve(async (req: Request) => {
@@ -94,15 +104,16 @@ Deno.serve(async (req: Request) => {
     }
 
     const recipients = await getEmailRecipients();
+    const businessName = await getBusinessName();
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "HomeIQ Leads <onboarding@resend.dev>",
+        from: `${businessName} Leads <onboarding@resend.dev>`,
         to: recipients,
         subject: `New Mortgage Lead: ${data.name}`,
-        html: buildEmailHtml(data),
+        html: buildEmailHtml(data, businessName),
       }),
     });
 
