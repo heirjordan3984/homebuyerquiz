@@ -78,9 +78,7 @@ export default function ClientLogin({ portalMode = false }: { portalMode?: boole
           </div>
         </div>
 
-        {portalMode ? (
-          <a href="/" className="block text-center mt-6 font-dm text-sm font-semibold" style={{ color: '#B8C4CE' }}>Back to home</a>
-        ) : (
+        {!portalMode && (
           <a href="#" className="block text-center mt-6 font-dm text-sm font-semibold" style={{ color: '#081827' }}>Back to quiz preview</a>
         )}
       </div>

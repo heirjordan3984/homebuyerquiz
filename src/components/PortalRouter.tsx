@@ -17,6 +17,7 @@ export default function PortalRouter({ clientSlug }: { clientSlug: string }) {
 
   useEffect(() => {
     let active = true;
+    document.title = 'Wildfire Lead Portal';
 
     async function check() {
       const { data: sessionData } = await supabase.auth.getSession();
