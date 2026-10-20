@@ -30,6 +30,9 @@ export function useBranding() {
         };
         cached = next;
         setBranding(next);
+        if (typeof document !== 'undefined') {
+          document.title = `${next.businessName} — Find Your Perfect Home`;
+        }
       });
     return () => { active = false; };
   }, []);
@@ -39,4 +42,7 @@ export function useBranding() {
 
 export function refreshBranding(next: Branding) {
   cached = next;
+  if (typeof document !== 'undefined') {
+    document.title = `${next.businessName} — Find Your Perfect Home`;
+  }
 }

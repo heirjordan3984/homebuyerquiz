@@ -39,7 +39,7 @@ export default function IntroScreen({ onFirstAnswer }: IntroScreenProps) {
     >
       {/* Brand logo / wordmark */}
       <div className="animate-fade-in stagger-1 w-full flex justify-center mb-4">
-        <BrandMark />
+        <BrandMark variant="hero" />
       </div>
 
       {/* Live count pill */}
