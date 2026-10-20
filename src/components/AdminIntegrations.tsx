@@ -277,21 +277,24 @@ export default function AdminIntegrations() {
                 }} placeholder="e.g. 123456789012345" className="w-full rounded-xl px-3.5 py-2.5 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
               </div>
               <div>
-                <label className="font-dm text-xs font-semibold uppercase tracking-wider block mb-1.5" style={{ color: '#7A8491' }}>Events fired</label>
-                <div className="flex flex-wrap gap-2">
+                <label className="font-dm text-xs font-semibold uppercase tracking-wider block mb-2" style={{ color: '#7A8491' }}>Events fired</label>
+                <div className="space-y-1.5">
                   {code.events.map((event, ei) => (
-                    <span key={ei} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-dm text-xs font-medium" style={{ backgroundColor: '#FFF0E8', color: '#7A5E1F' }}>
-                      {event}
+                    <div key={ei} className="flex items-center justify-between gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: '#FFF0E8' }}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-dm text-xs font-semibold" style={{ color: '#7A5E1F' }}>{event}</span>
+                        <span className="font-dm text-xs" style={{ color: '#A07B3B' }}>— {eventTriggerLabel(event)}</span>
+                      </div>
                       <button onClick={() => {
                         const updated = [...trackingCodes];
                         updated[index] = { ...code, events: code.events.filter((_, i) => i !== ei) };
                         setConfig((prev) => ({ ...prev, tracking_codes: updated }));
-                      }}><X size={11} /></button>
-                    </span>
+                      }} className="shrink-0"><X size={12} style={{ color: '#A07B3B' }} /></button>
+                    </div>
                   ))}
                   <input
                     placeholder="Add event…"
-                    className="rounded-lg px-2.5 py-1.5 font-dm text-xs outline-none w-28"
+                    className="rounded-lg px-2.5 py-1.5 font-dm text-xs outline-none w-full"
                     style={{ border: '1px solid #DDD7CB', color: '#081027' }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -361,6 +364,21 @@ export default function AdminIntegrations() {
       </SectionCard>
     </div>
   );
+}
+
+function eventTriggerLabel(event: string): string {
+  switch (event) {
+    case 'PageView':
+      return 'Fires on page load';
+    case 'Lead':
+      return 'Fires when the lead form is submitted';
+    case 'Purchase':
+      return 'Fires when a lead with good credit submits the form';
+    case 'Schedule':
+      return 'Fires when a booking is confirmed';
+    default:
+      return 'Custom event';
+  }
 }
 
 function SectionCard({ icon, title, description, children }: { icon: React.ReactNode; title: string; description: string; children: React.ReactNode }) {
