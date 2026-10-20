@@ -143,13 +143,12 @@ export default function AdminIntegrations() {
     setUserError(null);
   }
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const quizUrl = (config?.quiz_url as string) || origin;
-  const portalPath = (config?.portal_path as string) || '/portal';
+  const portalDomain = 'portal.wildfirelocal.net';
+  const portalPath = (config?.portal_path as string) || '/client-name';
   const trackingCodes = (config?.tracking_codes as TrackingCode[]) || [];
   const emailRecipients = (config?.email_recipients as string[]) || [];
   const zapierWebhook = (config?.zapier_webhook as string) || '';
-  const portalFullUrl = `${origin}${portalPath}`;
+  const portalFullUrl = `https://${portalDomain}${portalPath}`;
 
   if (loading) {
     return (
@@ -177,24 +176,11 @@ export default function AdminIntegrations() {
         </div>
       )}
 
-      {/* Quiz URL */}
-      <SectionCard icon={<Link2 size={18} />} title="Quiz URL" description="The public URL where the HomeIQ quiz is deployed. Defaults to the current site domain.">
-        <UrlField
-          value={quizUrl}
-          onChange={(v) => setConfig((prev) => ({ ...prev, quiz_url: v }))}
-          onSave={() => saveConfig('quiz_url', quizUrl)}
-          onCopy={() => copyToClipboard(quizUrl, 'quiz-url')}
-          copied={copied === 'quiz-url'}
-          saving={saving === 'quiz_url'}
-          placeholder={origin}
-        />
-      </SectionCard>
-
       {/* Lead Portal URL */}
-      <SectionCard icon={<Link2 size={18} />} title="Lead Portal URL" description="The path used for client lead portals. The domain stays fixed; edit only the path.">
+      <SectionCard icon={<Link2 size={18} />} title="Lead Portal URL" description="The URL clients visit to log in and view their leads. The domain is fixed; edit the path for each client.">
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-dm text-sm" style={{ color: '#8A8A8A' }}>{origin}</span>
+            <span className="font-dm text-sm" style={{ color: '#8A8A8A' }}>https://{portalDomain}</span>
             <input
               value={portalPath}
               onChange={(e) => {
@@ -203,7 +189,7 @@ export default function AdminIntegrations() {
               }}
               className="rounded-xl px-3 py-2.5 font-dm text-sm outline-none flex-1 min-w-[120px]"
               style={{ border: '1px solid #DDD7CB', color: '#081027' }}
-              placeholder="/portal"
+              placeholder="/client-name"
             />
             <button onClick={() => copyToClipboard(portalFullUrl, 'portal-url')} className="flex items-center gap-1.5 rounded-xl px-3 py-2.5 font-dm text-xs font-semibold transition-colors" style={{ border: '1px solid #DDD7CB', color: '#081027' }}>
               {copied === 'portal-url' ? <Check size={14} style={{ color: '#2D6A4F' }} /> : <Copy size={14} />} Copy link
