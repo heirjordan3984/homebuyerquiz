@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 export default function ClientLogin({ portalMode = false, clientName }: { portalMode?: boolean; clientName?: string }) {
@@ -7,6 +7,7 @@ export default function ClientLogin({ portalMode = false, clientName }: { portal
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -58,7 +59,12 @@ export default function ClientLogin({ portalMode = false, clientName }: { portal
             </label>
             <label className="block">
               <span className="font-dm text-xs font-semibold uppercase tracking-wider" style={{ color: '#5A6573' }}>Password</span>
-              <input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl px-4 py-3.5 outline-none font-dm text-sm" style={{ border: '1px solid #DDD7CB', color: '#081827', backgroundColor: '#FCFBF8' }} />
+              <div className="relative mt-2">
+                <input type={showPassword ? 'text' : 'password'} required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-xl px-4 py-3.5 pr-11 outline-none font-dm text-sm" style={{ border: '1px solid #DDD7CB', color: '#081827', backgroundColor: '#FCFBF8' }} />
+                <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-stone-100" style={{ color: '#8A8A8A' }}>
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
             </label>
             {error && <p role="alert" className="rounded-xl px-4 py-3 text-sm font-dm" style={{ color: '#8A2A2A', backgroundColor: '#FBEEEE', border: '1px solid #F1D6D6' }}>{error}</p>}
             <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-dm font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60" style={{ backgroundColor: '#081827', color: '#FFFFFF' }}>
