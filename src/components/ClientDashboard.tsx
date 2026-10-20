@@ -109,13 +109,13 @@ export default function ClientDashboard({ preview = false }: { preview?: boolean
 
     load();
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) window.location.hash = 'client-login';
+      if (!session && !preview) window.location.hash = 'client-login';
     });
     return () => {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [preview]);
 
   const answerFilters = useMemo(() => {
     const questions = new Map<number, { id: number; label: string; options: Set<string> }>();
