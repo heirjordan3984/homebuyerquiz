@@ -1,4 +1,4 @@
-import { BarChart3, ExternalLink, Users } from 'lucide-react';
+import { BarChart3, ExternalLink, LogIn, Users } from 'lucide-react';
 
 export default function PreviewMenu() {
   return (
@@ -8,6 +8,10 @@ export default function PreviewMenu() {
         Admin Dashboard
       </a>
       <a href="#client-login" className="flex items-center gap-1.5 rounded-lg px-3 py-2 font-dm text-xs font-semibold transition-colors hover:bg-white/10" style={{ color: '#FFFFFF' }}>
+        <LogIn size={14} style={{ color: '#FF9F43' }} />
+        Lead Portal Login
+      </a>
+      <a href="#client-dashboard" className="flex items-center gap-1.5 rounded-lg px-3 py-2 font-dm text-xs font-semibold transition-colors hover:bg-white/10" style={{ color: '#FFFFFF' }}>
         <Users size={14} style={{ color: '#FF9F43' }} />
         Lead Portal
       </a>
