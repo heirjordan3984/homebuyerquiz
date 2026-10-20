@@ -240,7 +240,7 @@ export default function AdminIntegrations() {
               </div>
               <input type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Email address" className="w-full rounded-xl px-3.5 py-2.5 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
               <div className="relative">
-                <input type={showUserPassword ? 'text' : 'password'} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} placeholder={editingUser ? 'Leave blank to keep current' : 'Password'} className="w-full rounded-xl px-3.5 py-2.5 pr-20 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
+                <input type={showUserPassword ? 'text' : 'password'} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} placeholder={editingUser ? (editingUser.password ? 'Leave blank to keep current' : 'Set a new password to save') : 'Password'} className="w-full rounded-xl px-3.5 py-2.5 pr-20 font-dm text-sm outline-none" style={{ border: '1px solid #DDD7CB', color: '#081027' }} />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button type="button" onClick={() => { if (userPassword) copyToClipboard(userPassword, 'user-password'); }} disabled={!userPassword} className="p-1.5 rounded-lg transition-colors hover:bg-stone-100 disabled:opacity-40" title="Copy password">
                     {copied === 'user-password' ? <Check size={15} style={{ color: '#2D6A4F' }} /> : <Copy size={15} style={{ color: '#8A8A8A' }} />}
