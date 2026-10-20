@@ -23,6 +23,7 @@ import AdminShell from './components/AdminShell';
 import AdminDashboard from './components/AdminDashboard';
 import ClientLogin from './components/ClientLogin';
 import ClientDashboard from './components/ClientDashboard';
+import PortalRouter from './components/PortalRouter';
 import PreviewMenu from './components/PreviewMenu';
 
 type Phase = 'intro' | 'quiz' | 'gate' | 'evaluating' | 'results';
@@ -159,6 +160,15 @@ function useHashRoute() {
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
   return hash;
+}
+
+function getPortalSlug(): string | null {
+  if (typeof window === 'undefined') return null;
+  const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
+  if (!path) return null;
+  if (path.includes('/') || path.includes('.')) return null;
+  if (['admin', 'client-login', 'client-dashboard', 'dashboard'].includes(path)) return null;
+  return decodeURIComponent(path);
 }
 
 function App() {
@@ -417,6 +427,12 @@ function App() {
   }
 
   const isDev = import.meta.env.DEV;
+
+  const portalSlug = getPortalSlug();
+
+  if (portalSlug) {
+    return <PortalRouter clientSlug={portalSlug} />;
+  }
 
   const resultsSlideLabels: { view: ResultsView; label: string }[] = [
     { view: 'slide1', label: 'Results — Slide 1' },

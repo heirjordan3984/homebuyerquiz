@@ -65,7 +65,7 @@ function getAnswer(lead: Lead, questionId: number): string {
   return answer?.selected_option_text ?? answer?.text_answer ?? '';
 }
 
-export default function ClientDashboard({ preview = false }: { preview?: boolean }) {
+export default function ClientDashboard({ preview = false, portalMode = false, clientName }: { preview?: boolean; portalMode?: boolean; clientName?: string }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [period, setPeriod] = useState<Period>('week');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -85,7 +85,7 @@ export default function ClientDashboard({ preview = false }: { preview?: boolean
     async function load() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!active) return;
-      if (!sessionData.session && !preview) {
+      if (!sessionData.session && !preview && !portalMode) {
         window.location.hash = 'client-login';
         setAuthReady(true);
         setLoading(false);
@@ -109,13 +109,13 @@ export default function ClientDashboard({ preview = false }: { preview?: boolean
 
     load();
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && !preview) window.location.hash = 'client-login';
+      if (!session && !preview && !portalMode) window.location.hash = 'client-login';
     });
     return () => {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [preview]);
+  }, [preview, portalMode]);
 
   const answerFilters = useMemo(() => {
     const questions = new Map<number, { id: number; label: string; options: Set<string> }>();
@@ -175,7 +175,13 @@ export default function ClientDashboard({ preview = false }: { preview?: boolean
 
   async function signOut() {
     await supabase.auth.signOut();
-    window.location.hash = 'client-login';
+    if (portalMode) {
+      setAuthReady(false);
+      setLoading(true);
+      window.location.reload();
+    } else {
+      window.location.hash = 'client-login';
+    }
   }
 
   function clearFilters() {
@@ -190,12 +196,13 @@ export default function ClientDashboard({ preview = false }: { preview?: boolean
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#07111B' }}>
-      <PreviewMenu />
+      {!portalMode && <PreviewMenu />}
       <div className="w-full h-1" style={{ backgroundColor: '#F15B2A' }} />
       <header className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-center">
         <div className="w-full text-center">
           <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mx-auto mb-3" />
           <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#FFFFFF' }}>Lead Portal</h1>
+          {portalMode && clientName && <p className="font-dm text-sm mt-2" style={{ color: '#FFB347' }}>{clientName}</p>}
         </div>
         <button onClick={signOut} className="absolute right-4 sm:right-6 top-7 flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white" style={{ color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.24)' }}><LogOut size={15} /> Sign out</button>
       </header>
