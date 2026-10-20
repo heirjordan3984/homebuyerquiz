@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.quiz-analytics]
 verify_jwt = false
+
+[functions.resend-notify]
+verify_jwt = false

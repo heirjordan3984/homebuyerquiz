@@ -339,6 +339,15 @@ function App() {
       rentcastData?.market?.averageSalePrice ??
       null;
 
+    const notificationData = {
+      name,
+      email: _email,
+      phone: _phone,
+      address: addressToLookup ?? '',
+      propertyValue,
+      quizAnswers,
+    };
+
     if (_email.trim().toLowerCase() !== 'gabrielbcarvalho2014@gmail.com') {
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/slack-notify`, {
         method: 'POST',
@@ -346,18 +355,18 @@ function App() {
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          type: 'lead',
-          data: {
-            name,
-            email: _email,
-            phone: _phone,
-            address: addressToLookup ?? '',
-            propertyValue,
-          },
-        }),
+        body: JSON.stringify({ type: 'lead', data: notificationData }),
       }).catch((err) => console.error('[slack-notify] lead error:', err));
     }
+
+    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/resend-notify`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(notificationData),
+    }).catch((err) => console.error('[resend-notify] lead error:', err));
   }
 
   function handleAnswer(optionIndex: number) {

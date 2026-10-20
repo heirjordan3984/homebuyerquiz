@@ -1,0 +1,94 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+};
+
+type QuizAnswer = {
+  id: number;
+  question?: string;
+  selected_option_text?: string | null;
+  text_answer?: string | null;
+};
+
+type LeadPayload = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  propertyValue?: number | null;
+  quizAnswers?: QuizAnswer[];
+};
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function display(value: string | number | null | undefined): string {
+  return value === null || value === undefined || value === "" ? "—" : String(value);
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+}
+
+function buildEmailHtml(data: LeadPayload): string {
+  const contactRows = [
+    ["Name", display(data.name)],
+    ["Phone", display(data.phone)],
+    ["Email", display(data.email)],
+  ];
+  const detailRows = [
+    ["Property address", display(data.address)],
+    ["Estimated property value", formatCurrency(data.propertyValue)],
+    ...(data.quizAnswers ?? []).map((answer) => [`Q${answer.id} · ${display(answer.question)}`, display(answer.selected_option_text ?? answer.text_answer)]),
+  ];
+  const rows = [...contactRows, ...detailRows].map(([label, value]) => `<tr><td style="padding:10px 12px;border-bottom:1px solid #e7e1d8;color:#697586;font-size:13px;vertical-align:top">${escapeHtml(label)}</td><td style="padding:10px 12px;border-bottom:1px solid #e7e1d8;color:#17202a;font-size:14px;vertical-align:top">${escapeHtml(value)}</td></tr>`).join("");
+  return `<div style="font-family:Arial,sans-serif;max-width:680px;color:#17202a"><h1 style="font-size:24px;margin:0 0 8px">New Mortgage Lead Generated</h1><p style="color:#697586;margin:0 0 20px">A new HomeIQ form submission has been received.</p><table style="width:100%;border-collapse:collapse;background:#faf9f6">${rows}</table></div>`;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 200, headers: corsHeaders });
+
+  try {
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "Email credentials not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const data = (await req.json()) as LeadPayload;
+    if (!data.name || !data.email) {
+      return new Response(JSON.stringify({ error: "Name and email are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "HomeIQ Leads <onboarding@resend.dev>",
+        to: ["jordan@wildfirelocal.net"],
+        subject: `New Mortgage Lead: ${data.name}`,
+        html: buildEmailHtml(data),
+      }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error("[resend-notify] Resend API error:", detail);
+      return new Response(JSON.stringify({ error: "Email provider rejected the notification" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("[resend-notify] error:", error);
+    return new Response(JSON.stringify({ error: "Unable to send notification" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+});
