@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, CalendarDays, ChevronDown, LogOut, Search, Users, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import PreviewMenu from './PreviewMenu';
 
 interface QuizAnswer {
   id: number;
@@ -189,6 +190,7 @@ export default function ClientDashboard() {
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#F6F4EF' }}>
+      {import.meta.env.DEV && <PreviewMenu />}
       <div className="w-full h-1" style={{ backgroundColor: '#C9A84C' }} />
       <header className="max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-between gap-4">
         <div>
