@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, CalendarDays, ChevronDown, LogOut, Search, Users, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarDays, ChevronDown, LogOut, Mail, Phone, Search, Users, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import PreviewMenu from './PreviewMenu';
 
@@ -261,5 +261,25 @@ function ComparisonChart({ current, previous, period }: { current: number; previ
 }
 
 function LeadRow({ lead, expanded, onToggle }: { lead: Lead; expanded: boolean; onToggle: () => void }) {
-  return <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5' }}><button onClick={onToggle} className="w-full text-left px-4 sm:px-5 py-4 flex items-center justify-between gap-4 hover:bg-stone-50 transition-colors"><div className="min-w-0"><p className="font-dm font-semibold text-sm truncate" style={{ color: '#081827' }}>{lead.name || 'Unnamed lead'}</p><div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 font-dm text-xs" style={{ color: '#7A8491' }}><span>{lead.email || 'No email'}</span><span>{formatDate(lead.created_at)}</span>{lead.property_address && <span className="truncate max-w-xs">{lead.property_address}</span>}</div></div><ChevronDown size={17} className={`shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} style={{ color: '#F15B2A' }} /></button>{expanded && <div className="px-4 sm:px-5 py-4 space-y-2" style={{ backgroundColor: '#FCFBF8', borderTop: '1px solid #F0EDE8' }}>{lead.quiz_answers?.map((answer, index) => <div key={`${answer.id}-${index}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-2" style={{ borderBottom: index < (lead.quiz_answers?.length ?? 0) - 1 ? '1px solid #F0EDE8' : 'none' }}><span className="font-dm text-xs" style={{ color: '#7A8491' }}>Q{answer.id} · {answer.question}</span><span className="font-dm text-sm font-medium sm:text-right" style={{ color: '#081827' }}>{answer.selected_option_text ?? answer.text_answer ?? '—'}</span></div>)}</div>}</div>;
+  return <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5' }}>
+    <button onClick={onToggle} className="w-full text-left px-4 sm:px-5 py-4 flex items-center justify-between gap-4 hover:bg-stone-50 transition-colors">
+      <div className="min-w-0">
+        <p className="font-dm font-semibold text-sm truncate" style={{ color: '#081827' }}>{lead.name || 'Unnamed lead'}</p>
+        <div className="flex flex-wrap gap-x-4 gap-y-2 mt-2 font-dm text-xs" style={{ color: '#536273' }}>
+          <span className="inline-flex items-center gap-1.5"><Mail size={13} style={{ color: '#D54822' }} />{lead.email || 'No email'}</span>
+          <span className="inline-flex items-center gap-1.5"><Phone size={13} style={{ color: '#D54822' }} />{lead.phone || 'No phone'}</span>
+          <span>{formatDate(lead.created_at)}</span>
+          {lead.property_address && <span className="truncate max-w-xs">{lead.property_address}</span>}
+        </div>
+      </div>
+      <ChevronDown size={17} className={`shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} style={{ color: '#F15B2A' }} />
+    </button>
+    {expanded && <div className="px-4 sm:px-5 py-4 space-y-4" style={{ backgroundColor: '#FCFBF8', borderTop: '1px solid #F0EDE8' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="rounded-xl px-3.5 py-3" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5' }}><p className="font-dm text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#7A8491' }}>Email</p><p className="font-dm text-sm font-medium mt-1 break-all" style={{ color: '#081827' }}>{lead.email || 'No email provided'}</p></div>
+        <div className="rounded-xl px-3.5 py-3" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5' }}><p className="font-dm text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#7A8491' }}>Phone</p><p className="font-dm text-sm font-medium mt-1" style={{ color: '#081827' }}>{lead.phone || 'No phone provided'}</p></div>
+      </div>
+      {lead.quiz_answers?.map((answer, index) => <div key={`${answer.id}-${index}`} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-2" style={{ borderBottom: index < (lead.quiz_answers?.length ?? 0) - 1 ? '1px solid #F0EDE8' : 'none' }}><span className="font-dm text-xs" style={{ color: '#7A8491' }}>Q{answer.id} · {answer.question}</span><span className="font-dm text-sm font-medium sm:text-right" style={{ color: '#081827' }}>{answer.selected_option_text ?? answer.text_answer ?? '—'}</span></div>)}
+    </div>}
+  </div>;
 }
