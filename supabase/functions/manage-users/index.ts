@@ -25,7 +25,18 @@ Deno.serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      const users = data.users.map((u) => ({ id: u.id, email: u.email, created_at: u.created_at }));
+      const { data: pwRow } = await supabaseAdmin
+        .from("integration_config")
+        .select("value")
+        .eq("key", "user_passwords")
+        .maybeSingle();
+      const pwMap = (pwRow?.value as Record<string, string> | null) ?? {};
+      const users = data.users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        created_at: u.created_at,
+        password: pwMap[u.id] ?? "",
+      }));
       return new Response(JSON.stringify({ users }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -44,7 +55,19 @@ Deno.serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      return new Response(JSON.stringify({ user: { id: data.user.id, email: data.user.email, created_at: data.user.created_at } }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      // Persist password so it can be shown later in the admin panel
+      const userId = data.user.id;
+      const { data: pwRow } = await supabaseAdmin
+        .from("integration_config")
+        .select("value")
+        .eq("key", "user_passwords")
+        .maybeSingle();
+      const pwMap = (pwRow?.value as Record<string, string> | null) ?? {};
+      pwMap[userId] = password;
+      await supabaseAdmin
+        .from("integration_config")
+        .upsert({ key: "user_passwords", value: pwMap, updated_at: new Date().toISOString() }, { onConflict: "key" });
+      return new Response(JSON.stringify({ user: { id: userId, email: data.user.email, created_at: data.user.created_at } }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (method === "PUT") {
@@ -59,6 +82,19 @@ Deno.serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      // Sync stored password if it was changed
+      if (password) {
+        const { data: pwRow } = await supabaseAdmin
+          .from("integration_config")
+          .select("value")
+          .eq("key", "user_passwords")
+          .maybeSingle();
+        const pwMap = (pwRow?.value as Record<string, string> | null) ?? {};
+        pwMap[userId] = password;
+        await supabaseAdmin
+          .from("integration_config")
+          .upsert({ key: "user_passwords", value: pwMap, updated_at: new Date().toISOString() }, { onConflict: "key" });
+      }
       return new Response(JSON.stringify({ user: { id: data.user.id, email: data.user.email, created_at: data.user.created_at } }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -70,6 +106,19 @@ Deno.serve(async (req: Request) => {
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      // Remove stored password for deleted user
+      const { data: pwRow } = await supabaseAdmin
+        .from("integration_config")
+        .select("value")
+        .eq("key", "user_passwords")
+        .maybeSingle();
+      const pwMap = (pwRow?.value as Record<string, string> | null) ?? {};
+      if (pwMap[userId]) {
+        delete pwMap[userId];
+        await supabaseAdmin
+          .from("integration_config")
+          .upsert({ key: "user_passwords", value: pwMap, updated_at: new Date().toISOString() }, { onConflict: "key" });
       }
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
