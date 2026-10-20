@@ -106,12 +106,12 @@ Deno.serve(async (req: Request) => {
       if (!userId) {
         return new Response(JSON.stringify({ error: "User ID is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      // Remove client membership before deleting the auth user
+      await supabaseAdmin.from("client_members").delete().eq("user_id", userId);
       const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      // Remove client membership for deleted user
-      await supabaseAdmin.from("client_members").delete().eq("user_id", userId);
       // Remove stored password for deleted user
       const { data: pwRow } = await supabaseAdmin
         .from("integration_config")
