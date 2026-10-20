@@ -26,7 +26,7 @@ export default function AdminShell() {
             active={tab === 'analytics'}
             onClick={() => setTab('analytics')}
             icon={<BarChart3 size={14} />}
-            label="Analytics"
+            label="Admin"
           />
           <TabButton
             active={tab === 'leads'}

@@ -25,6 +25,7 @@ import ClientLogin from './components/ClientLogin';
 import ClientDashboard from './components/ClientDashboard';
 import PortalRouter from './components/PortalRouter';
 import PreviewMenu from './components/PreviewMenu';
+import { useTrackingCodes } from './hooks/useTrackingCodes';
 
 type Phase = 'intro' | 'quiz' | 'gate' | 'evaluating' | 'results';
 type ResultsView = 'slide1' | 'slide2' | 'slide3' | 'full';
@@ -174,6 +175,8 @@ function getPortalSlug(): string | null {
 function App() {
   const hash = useHashRoute();
   const saved = loadSession();
+
+  useTrackingCodes();
 
   const [phase, setPhase] = useState<Phase>(saved?.phase ?? 'intro');
   const [currentScreenIndex, setCurrentScreenIndex] = useState<number>(saved?.currentScreenIndex ?? 0);

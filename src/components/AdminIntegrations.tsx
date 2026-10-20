@@ -143,12 +143,12 @@ export default function AdminIntegrations() {
     setUserError(null);
   }
 
-  const quizUrl = (config?.quiz_url as string) || '';
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const quizUrl = (config?.quiz_url as string) || origin;
   const portalPath = (config?.portal_path as string) || '/portal';
   const trackingCodes = (config?.tracking_codes as TrackingCode[]) || [];
   const emailRecipients = (config?.email_recipients as string[]) || [];
   const zapierWebhook = (config?.zapier_webhook as string) || '';
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const portalFullUrl = `${origin}${portalPath}`;
 
   if (loading) {
@@ -178,7 +178,7 @@ export default function AdminIntegrations() {
       )}
 
       {/* Quiz URL */}
-      <SectionCard icon={<Link2 size={18} />} title="Quiz URL" description="The public URL where the HomeIQ quiz is deployed.">
+      <SectionCard icon={<Link2 size={18} />} title="Quiz URL" description="The public URL where the HomeIQ quiz is deployed. Defaults to the current site domain.">
         <UrlField
           value={quizUrl}
           onChange={(v) => setConfig((prev) => ({ ...prev, quiz_url: v }))}
@@ -186,7 +186,7 @@ export default function AdminIntegrations() {
           onCopy={() => copyToClipboard(quizUrl, 'quiz-url')}
           copied={copied === 'quiz-url'}
           saving={saving === 'quiz_url'}
-          placeholder="https://homeiqquiz.com"
+          placeholder={origin}
         />
       </SectionCard>
 
