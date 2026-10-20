@@ -29,8 +29,8 @@ export default function ClientLogin() {
       <PreviewMenu />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mx-auto mb-3" />
-          <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#FFFFFF' }}>Lead Portal</h1>
+          <img src="/WildfireMarketingWhiteTransparent copy 2.png" alt="Wildfire Marketing" className="w-64 max-w-full h-auto mx-auto mb-8" />
+          <h1 className="font-playfair font-bold mt-0" style={{ fontSize: 'clamp(2rem, 7vw, 3.1rem)', color: '#FFFFFF' }}>Lead Portal</h1>
         </div>
 
         <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6E0D5', boxShadow: '0 18px 60px rgba(13,27,42,0.08)' }}>
