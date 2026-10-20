@@ -194,8 +194,9 @@ export default function ClientDashboard() {
       <div className="w-full h-1" style={{ backgroundColor: '#F15B2A' }} />
       <header className="max-w-7xl mx-auto px-4 sm:px-6 pt-7 pb-5 flex items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center rounded-xl px-3 py-2" style={{ backgroundColor: '#07111B' }}>
-            <img src="/WildfireMarketingLogoTransparent.png" alt="Wildfire Marketing" className="w-44 sm:w-52 h-auto" />
+          <div className="inline-flex items-center gap-2.5" aria-label="Wildfire Marketing">
+            <span className="relative block w-9 h-9 shrink-0" aria-hidden="true"><span className="absolute left-1 top-0 w-4 h-7 -skew-x-[28deg] rounded-sm" style={{ backgroundColor: '#F15B2A' }} /><span className="absolute left-3 top-3 w-5 h-7 -skew-x-[28deg] rounded-sm" style={{ backgroundColor: '#FFB347' }} /></span>
+            <span><span className="block font-dm font-extrabold italic tracking-[-0.07em] text-[1.7rem] leading-[0.85]" style={{ color: '#FFFFFF' }}>wildfire</span><span className="block font-dm text-[0.48rem] tracking-[0.42em] mt-1" style={{ color: '#FFFFFF' }}>MARKETING</span></span>
           </div>
           <h1 className="font-playfair font-bold mt-2" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#FFFFFF' }}>Lead Portal</h1>
           <p className="font-dm text-sm mt-1" style={{ color: '#B8C4CE' }}>A clear view of the people raising their hand.</p>
