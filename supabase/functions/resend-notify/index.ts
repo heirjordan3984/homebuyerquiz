@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
 
     const recipients = await getEmailRecipients();
     const businessName = await getBusinessName();
-    const from = `${businessName} Leads <onboarding@resend.dev>`;
+    const from = `${businessName} Leads <leads@updates.wildfirelocal.net>`;
     const subject = `New Mortgage Lead: ${data.name}`;
     const html = buildEmailHtml(data, businessName);
 
