@@ -105,25 +105,39 @@ Deno.serve(async (req: Request) => {
 
     const recipients = await getEmailRecipients();
     const businessName = await getBusinessName();
+    const from = `${businessName} Leads <onboarding@resend.dev>`;
+    const subject = `New Mortgage Lead: ${data.name}`;
+    const html = buildEmailHtml(data, businessName);
 
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: `${businessName} Leads <onboarding@resend.dev>`,
-        to: recipients,
-        subject: `New Mortgage Lead: ${data.name}`,
-        html: buildEmailHtml(data, businessName),
-      }),
-    });
+    const results = await Promise.all(
+      recipients.map(async (recipient) => {
+        try {
+          const response = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ from, to: [recipient], subject, html }),
+          });
+          if (!response.ok) {
+            const detail = await response.text();
+            console.error(`[resend-notify] Resend API error for ${recipient}:`, detail);
+            return { recipient, ok: false, detail };
+          }
+          return { recipient, ok: true };
+        } catch (err) {
+          console.error(`[resend-notify] send error for ${recipient}:`, err);
+          return { recipient, ok: false, detail: String(err) };
+        }
+      })
+    );
 
-    if (!response.ok) {
-      const detail = await response.text();
-      console.error("[resend-notify] Resend API error:", detail);
-      return new Response(JSON.stringify({ error: "Email provider rejected the notification" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const succeeded = results.filter((r) => r.ok);
+    const failed = results.filter((r) => !r.ok);
+
+    if (succeeded.length === 0) {
+      return new Response(JSON.stringify({ error: "Email provider rejected all recipients", failed }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ ok: true, sent: succeeded.length, failed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[resend-notify] error:", error);
     return new Response(JSON.stringify({ error: "Unable to send notification" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
