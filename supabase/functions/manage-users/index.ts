@@ -40,10 +40,13 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ users }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const body = await req.json();
+    let body: Record<string, unknown> = {};
+    if (method !== "DELETE") {
+      body = await req.json();
+    }
 
     if (method === "POST") {
-      const { email, password } = body;
+      const { email, password } = body as { email?: string; password?: string };
       if (!email || !password) {
         return new Response(JSON.stringify({ error: "Email and password are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -55,6 +58,7 @@ Deno.serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      const userId = data.user.id;
       // Link the new user to the default Wildfire Local client account
       await supabaseAdmin
         .from("client_members")
@@ -74,7 +78,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (method === "PUT") {
-      const { userId, email, password } = body;
+      const { userId, email, password } = body as { userId?: string; email?: string; password?: string };
       if (!userId) {
         return new Response(JSON.stringify({ error: "User ID is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
