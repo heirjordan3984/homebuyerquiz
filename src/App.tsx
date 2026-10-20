@@ -436,11 +436,12 @@ function App() {
   }
 
   const isDev = import.meta.env.DEV;
+  const dashboardButton = isDev ? <PreviewMenu /> : null;
 
   const portalSlug = getPortalSlug();
 
   if (portalSlug) {
-    return <PortalRouter />;
+    return <><PortalRouter />{dashboardButton}</>;
   }
 
   const resultsSlideLabels: { view: ResultsView; label: string }[] = [
@@ -461,22 +462,20 @@ function App() {
     />
   ) : null;
 
-  const dashboardButton = isDev ? <PreviewMenu /> : null;
-
   if (hash === '#client-login') {
-    return <ClientLogin />;
+    return <><ClientLogin />{dashboardButton}</>;
   }
 
   if (hash === '#client-dashboard') {
-    return <ClientDashboard preview={isDev} />;
+    return <><ClientDashboard preview={isDev} />{dashboardButton}</>;
   }
 
   if (hash === '#admin') {
-    return <AdminShell />;
+    return <><AdminShell />{dashboardButton}</>;
   }
 
   if (hash === '#dashboard') {
-    return <AdminDashboard />;
+    return <><AdminDashboard />{dashboardButton}</>;
   }
 
   if (phase === 'intro') {
