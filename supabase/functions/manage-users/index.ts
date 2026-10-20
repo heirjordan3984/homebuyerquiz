@@ -55,8 +55,11 @@ Deno.serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      // Link the new user to the default Wildfire Local client account
+      await supabaseAdmin
+        .from("client_members")
+        .upsert({ user_id: userId, client_account_id: "1c5d9e55-4b6e-4f4c-8e0f-1a9dc8f7b211" }, { onConflict: "user_id" });
       // Persist password so it can be shown later in the admin panel
-      const userId = data.user.id;
       const { data: pwRow } = await supabaseAdmin
         .from("integration_config")
         .select("value")
@@ -107,6 +110,8 @@ Deno.serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      // Remove client membership for deleted user
+      await supabaseAdmin.from("client_members").delete().eq("user_id", userId);
       // Remove stored password for deleted user
       const { data: pwRow } = await supabaseAdmin
         .from("integration_config")
